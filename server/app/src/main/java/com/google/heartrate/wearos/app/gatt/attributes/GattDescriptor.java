@@ -52,9 +52,10 @@ public class GattDescriptor implements GattAttribute {
      *
      * @param device device from which write request was received
      * @param offset value offset
+     * @param value value to write
      * @throws GattException if value can not be write
      */
-    public void write(BluetoothDevice device, boolean preparedWrite, int offset, byte[] value) throws GattException {
+    public void write(BluetoothDevice device, int offset, byte[] value) throws GattException {
         // TODO: implement setValue with offset, not required for now
         setValue(value);
     }

@@ -99,6 +99,7 @@ public class GattCharacteristic implements GattAttribute {
      *
      * @param device device from which write request was received
      * @param offset value offset
+     * @param value value to write
      * @throws GattException if value can not be write
      */
     public void write(BluetoothDevice device, int offset, byte[] value) throws GattException {
