@@ -20,4 +20,4 @@ jobs:
       - name: Unit tests client
         run: cd client && ./gradlew test --stacktrace
       - name: Unit tests server
-        run: cd server && ./server/gradlew test --stacktrace
+        run: cd server && ./gradlew test --stacktrace
