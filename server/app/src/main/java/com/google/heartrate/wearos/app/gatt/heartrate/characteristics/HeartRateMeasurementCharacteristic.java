@@ -65,7 +65,7 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
     /**
      * Create {@link GattCharacteristic} for Heart Rate Measurement characteristic.
      * <br>Configure {@link GattCharacteristic} with Heart Rate Measurement characteristic UUID,
-     * property for notification, no read/write permissions and Client Characteristic Configuration Descriptor.
+     * property for notification, no read/write permissions and Client Characteristic Configuration descriptor.
      */
     public HeartRateMeasurementCharacteristic() {
         super(HEART_RATE_MEASUREMENT_UUID,

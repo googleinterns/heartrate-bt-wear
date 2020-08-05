@@ -21,8 +21,8 @@ public class ClientCharacteristicConfigurationDescriptor extends GattDescriptor 
             .fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     /**
-     * Create DescriptorManager for Client Characteristic Configuration descriptor.
-     * <br>Configure DescriptorManager with Client Characteristic Configuration UUID
+     * Create {@link GattDescriptor} for Client Characteristic Configuration descriptor.
+     * <br>Configure {@link GattDescriptor} with Client Characteristic Configuration UUID,
      * read/write permissions and enabled notifications.
      */
     public ClientCharacteristicConfigurationDescriptor() {
