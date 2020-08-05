@@ -13,11 +13,7 @@ jobs:
           java-version: 1.8
       - name: Add write permisions to sdk
         run: sudo chmod -R a+w /usr/local/lib/android/sdk
-      - name: Go to client dir
-        run: cd client
       - name: Unit tests client
-        run: ./gradlew test --stacktrace
-      - name: Go to sever dir
-        run: cd ../server
+        run: ./client/gradlew test --stacktrace
       - name: Unit tests server
-        run: ./gradlew test --stacktrace
+        run: ./server/gradlew test --stacktrace
