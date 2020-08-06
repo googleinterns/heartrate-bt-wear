@@ -4,17 +4,20 @@ import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.widget.TextView;
 
-import com.google.heartrate.wearos.app.bluetooth.server.HeartRateServer;
+import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
+import com.google.heartrate.wearos.app.bluetooth.server.handlers.HeartRateServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
 
 
 /**
  * Application main activity sets up server and starts it (not supported yet).
  */
-public class MainActivity extends WearableActivity implements GattBluetoothActionsListener {
+public class MainActivity extends WearableActivity implements HeartRateValueSubscriber {
 
     private TextView mTextView;
-    private HeartRateServer heartRateServer;
+    private BluetoothServer mBluetoothServer;
+    private HeartRateServiceRequestHandler mHeartRateServiceRequestHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,8 +25,10 @@ public class MainActivity extends WearableActivity implements GattBluetoothActio
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
         try {
-            heartRateServer = new HeartRateServer(this);
-            heartRateServer.start(this);
+            mHeartRateServiceRequestHandler = new HeartRateServiceRequestHandler(this);
+            mBluetoothServer = new BluetoothServer(this);
+            mBluetoothServer.registerGattServiceHandler(mHeartRateServiceRequestHandler);
+            mBluetoothServer.start();
         } catch (GattException e) {
             e.printStackTrace();
         }
@@ -32,24 +37,24 @@ public class MainActivity extends WearableActivity implements GattBluetoothActio
 
     @Override
     protected void onResume() {
-        heartRateServer.registerReceiver();
+        mBluetoothServer.registerReceiver();
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        heartRateServer.unregisterReceiver();
+        mBluetoothServer.unregisterReceiver();
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        heartRateServer.stop();
+        mBluetoothServer.stop();
         super.onDestroy();
     }
 
     @Override
-    public void onAction(String action) {
-        mTextView.setText(action);
+    public void onHeartRateValueChanged(int value) {
+        mTextView.setText(String.format("HR: %d", value));
     }
 }

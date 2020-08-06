@@ -11,6 +11,7 @@ import android.util.Log;
 import com.google.heartrate.wearos.app.bluetooth.BluetoothUtils;
 import com.google.heartrate.wearos.app.gatt.GattException;
 
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -51,7 +52,7 @@ public class BluetoothAdvertiser {
      *
      * @param serviceUuids list of GATT services peripheral offers
      */
-    public void start(UUID[] serviceUuids) {
+    public void start(Set<UUID> serviceUuids) {
         Log.d(TAG, "Starting advertising");
 
         AdvertiseSettings.Builder advertiseSettings = new AdvertiseSettings.Builder()

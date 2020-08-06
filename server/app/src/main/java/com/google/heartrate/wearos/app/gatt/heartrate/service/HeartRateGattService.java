@@ -37,6 +37,9 @@ public class HeartRateGattService extends GattService {
     private static final UUID HEART_RATE_SERVICE_UUID = UUID
             .fromString("0000180d-0000-1000-8000-00805f9b34fb");
 
+    private static HeartRateMeasurementCharacteristic heartRateMeasurementCharacteristic =
+            new HeartRateMeasurementCharacteristic();
+
     /**
      * Create {@link GattService} for Heart Rate service.
      * <br>Configure {@link GattService} with Heart Rate service UUID,
@@ -45,6 +48,10 @@ public class HeartRateGattService extends GattService {
     public HeartRateGattService() {
         super(HEART_RATE_SERVICE_UUID,
                 BluetoothGattService.SERVICE_TYPE_PRIMARY,
-                new GattCharacteristic[]{ new HeartRateMeasurementCharacteristic()});
+                new GattCharacteristic[]{ heartRateMeasurementCharacteristic });
+    }
+
+    public HeartRateMeasurementCharacteristic getHeartRateMeasurementCharacteristic() {
+        return heartRateMeasurementCharacteristic;
     }
 }
