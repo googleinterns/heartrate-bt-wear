@@ -25,6 +25,7 @@ public class HeartRateSensorListener implements SensorEventListener {
     }
 
     public void registerSubscriber(HeartRateValueSubscriber subscriber) {
+        Log.d(TAG, "Register subscriber");
         if (subscribers.size() == 0) {
             startMeasure();
         }
@@ -32,6 +33,7 @@ public class HeartRateSensorListener implements SensorEventListener {
     }
 
     public void unregisterSubscriber(HeartRateValueSubscriber subscriber) {
+        Log.d(TAG, "Unregister subscriber");
         subscribers.remove(subscriber);
         if (subscribers.size() == 0) {
             stopMeasure();
@@ -39,11 +41,18 @@ public class HeartRateSensorListener implements SensorEventListener {
     }
 
     private void startMeasure() {
+        Log.d(TAG, "Start measurement");
         boolean sensorRegistered = mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        Log.d("Sensor Status:", " Sensor registered: " + (sensorRegistered ? "yes" : "no"));
+        if (!sensorRegistered) {
+            Log.e(TAG, "Heart rate sensor not registered");
+        } else {
+            Log.d(TAG, "Heart rate sensor registered");
+        }
+
     }
 
     private void stopMeasure() {
+        Log.d(TAG, "Stop measurement");
         mSensorManager.unregisterListener(this);
     }
 
@@ -51,7 +60,7 @@ public class HeartRateSensorListener implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         float heartRateFloat = event.values[0];
         int heartRate = Math.round(heartRateFloat);
-        Log.v(TAG, String.format("HR: %d", heartRate));
+        Log.v(TAG, String.format("onSensorChanged() - value=%d", heartRate));
 
         for (HeartRateValueSubscriber listener : subscribers) {
             listener.onHeartRateValueChanged(heartRate);

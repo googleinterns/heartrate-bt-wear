@@ -6,6 +6,9 @@ import android.util.Log;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ *
+ */
 public class DeviceHandler {
     private static final String TAG = DeviceHandler.class.getSimpleName();
 

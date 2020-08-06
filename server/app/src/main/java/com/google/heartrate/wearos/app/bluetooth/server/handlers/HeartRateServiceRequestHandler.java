@@ -3,7 +3,6 @@ package com.google.heartrate.wearos.app.bluetooth.server.handlers;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.content.Context;
 import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServerCallback;
@@ -21,7 +20,6 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     /** Service manager for Heart Rate service. */
     private final HeartRateGattService mHeartRateGattService;
 
-
     private final HeartRateSensorListener mHeartRateSensorListener;
 
     private BluetoothServerCallback mBluetoothServerCallback;
@@ -29,8 +27,8 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     /** Storage for all devices registered to server. */
     private DeviceHandler mDeviceHandler;
 
-    public HeartRateServiceRequestHandler(Context context) {
-        mHeartRateSensorListener = new HeartRateSensorListener(context);
+    public HeartRateServiceRequestHandler(HeartRateSensorListener heartRateSensorListener) {
+        mHeartRateSensorListener = heartRateSensorListener;
         mHeartRateGattService = new HeartRateGattService();
         mDeviceHandler = new DeviceHandler();
     }
@@ -89,6 +87,6 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
 
     @Override
     public BluetoothGattService getBluetoothGattService() {
-        return null;
+        return mHeartRateGattService.getBluetoothGattService();
     }
 }

@@ -7,6 +7,7 @@ import android.widget.TextView;
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.HeartRateServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
 import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
 
 
@@ -18,6 +19,7 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
     private TextView mTextView;
     private BluetoothServer mBluetoothServer;
     private HeartRateServiceRequestHandler mHeartRateServiceRequestHandler;
+    private HeartRateSensorListener mHeartRateSensorListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +27,14 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
         try {
-            mHeartRateServiceRequestHandler = new HeartRateServiceRequestHandler(this);
+            mHeartRateSensorListener = new HeartRateSensorListener(this);
+            mHeartRateSensorListener.registerSubscriber(this);
+
             mBluetoothServer = new BluetoothServer(this);
+
+            mHeartRateServiceRequestHandler = new HeartRateServiceRequestHandler(mHeartRateSensorListener);
             mBluetoothServer.registerGattServiceHandler(mHeartRateServiceRequestHandler);
+
             mBluetoothServer.start();
         } catch (GattException e) {
             e.printStackTrace();
