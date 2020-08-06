@@ -13,7 +13,8 @@ import com.google.heartrate.wearos.app.gatt.GattException;
 
 /**
  * Interface for bluetooth gatt service request handler.
- * To create bluetooth gatt service request handler for particular service
+ *
+ * <p>To create bluetooth gatt service request handler for particular service
  * override necessary requests or use default implementation.
  */
 public interface GattServiceRequestHandler {

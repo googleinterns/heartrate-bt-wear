@@ -10,13 +10,19 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Listener for heart rate sensor.
+ */
 public class HeartRateSensorListener implements SensorEventListener {
-
     private static final String TAG = HeartRateSensorListener.class.getSimpleName();
 
+    /** Sensor manager. */
     private final SensorManager mSensorManager;
+
+    /** Heart rate sensor to listen to. */
     private final Sensor mHeartRateSensor;
 
+    /** Subscriber for heart rate value updates. */
     private List<HeartRateValueSubscriber> subscribers = new ArrayList<>();
 
     public HeartRateSensorListener(Context context) {
@@ -24,6 +30,10 @@ public class HeartRateSensorListener implements SensorEventListener {
         mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
     }
 
+    /**
+     * Register subscriber.
+     * @param subscriber subscriber to register.
+     */
     public void registerSubscriber(HeartRateValueSubscriber subscriber) {
         Log.d(TAG, "Register subscriber");
         if (subscribers.size() == 0) {
@@ -32,6 +42,10 @@ public class HeartRateSensorListener implements SensorEventListener {
         subscribers.add(subscriber);
     }
 
+    /**
+     * Unregister subscriber.
+     * @param subscriber subscriber to unregister.
+     */
     public void unregisterSubscriber(HeartRateValueSubscriber subscriber) {
         Log.d(TAG, "Unregister subscriber");
         subscribers.remove(subscriber);
@@ -40,6 +54,9 @@ public class HeartRateSensorListener implements SensorEventListener {
         }
     }
 
+    /**
+     * Start measurement heart rate data. Register to heart rate sensor changes.
+     */
     private void startMeasure() {
         Log.d(TAG, "Start measurement");
         boolean sensorRegistered = mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
@@ -51,11 +68,18 @@ public class HeartRateSensorListener implements SensorEventListener {
 
     }
 
+    /**
+     * Stop measurement heart rate data. Unregister from heart rate sensor changes.
+     */
     private void stopMeasure() {
         Log.d(TAG, "Stop measurement");
         mSensorManager.unregisterListener(this);
     }
 
+    /**
+     * Callback invokes when heart rate value has been changed.
+     * @param event event from heart rate sensor
+     */
     @Override
     public void onSensorChanged(SensorEvent event) {
         float heartRateFloat = event.values[0];
