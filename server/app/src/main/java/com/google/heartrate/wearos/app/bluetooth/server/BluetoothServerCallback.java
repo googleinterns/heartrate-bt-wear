@@ -14,15 +14,26 @@ import com.google.heartrate.wearos.app.gatt.GattException;
 import java.util.Arrays;
 import java.util.Set;
 
+/**
+ * Class is used to implement {@link BluetoothServer} callbacks.
+ * <p>General-purpose for all read/write services attributes requests.
+ * Redirects all request to special handler for each service.
+ */
 public class BluetoothServerCallback extends BluetoothGattServerCallback {
     private static final String TAG = BluetoothServerCallback.class.getSimpleName();
 
+    /** {@link BluetoothServer} to handle requests received from callback. */
     public final BluetoothServer mBluetoothServer;
 
     public BluetoothServerCallback(BluetoothServer bluetoothServer) {
         mBluetoothServer = bluetoothServer;
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onConnectionStateChange}
+     *
+     * <p>Notify all request handlers in service about received devise connection state.
+     */
     @Override
     public void onConnectionStateChange(BluetoothDevice device, final int status, int newState) {
         Log.v(TAG, String.format("onConnectionStateChange() - device=%s status=%s state=%s",
@@ -45,6 +56,11 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         }
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onServiceAdded}
+     *
+     * <p>Notify request handlers for added service in service about publication to server status.
+     */
     @Override
     public void onServiceAdded(int status, BluetoothGattService bluetoothGattService) {
         Log.v(TAG, String.format("onServiceAdded() - status=%d", status));
@@ -56,11 +72,23 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         }
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onNotificationSent}
+     */
     @Override
     public void onNotificationSent(BluetoothDevice device, int status) {
         Log.v(TAG, String.format("onNotificationSent() - status=%d", status));
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onCharacteristicReadRequest}
+     *
+     * <p>Invoke {@link GattServiceRequestHandler#onCharacteristicRead} for given characteristic.
+     * If {@link BluetoothServer} has no handler for given characteristic or
+     * {@link GattServiceRequestHandler#onCharacteristicRead} failed,
+     * invoke {@link BluetoothServer#sendErrorResponse},
+     * otherwise {@link BluetoothServer#sendResponse} to send response to client.
+     */
     @Override
     public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset,
                                             BluetoothGattCharacteristic characteristic) {
@@ -78,6 +106,15 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         }
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onCharacteristicWriteRequest}
+     *
+     * <p>Invoke {@link GattServiceRequestHandler#onCharacteristicWrite} for given characteristic.
+     * If {@link BluetoothServer} has no handler for given characteristic or
+     * {@link GattServiceRequestHandler#onCharacteristicWrite} failed,
+     * invoke {@link BluetoothServer#sendErrorResponse},
+     * otherwise {@link BluetoothServer#sendResponse} to send response to client.
+     */
     @Override
     public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId,
                                              BluetoothGattCharacteristic characteristic, boolean preparedWrite, boolean responseNeeded,
@@ -101,6 +138,15 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         }
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onDescriptorReadRequest}
+     *
+     * <p>Invoke {@link GattServiceRequestHandler#onDescriptorRead} for given characteristic.
+     * If {@link BluetoothServer} has no handler for given descriptor or
+     * {@link GattServiceRequestHandler#onDescriptorRead} failed,
+     * invoke {@link BluetoothServer#sendErrorResponse},
+     * otherwise {@link BluetoothServer#sendResponse} to send response to client.
+     */
     @Override
     public void onDescriptorReadRequest(BluetoothDevice device, int requestId, int offset,
                                         BluetoothGattDescriptor descriptor) {
@@ -117,6 +163,15 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         }
     }
 
+    /**
+     * {@link BluetoothGattServerCallback#onDescriptorWriteRequest}
+     *
+     * <p>Invoke {@link GattServiceRequestHandler#onDescriptorWrite} for given characteristic.
+     * If {@link BluetoothServer} has no handler for given descriptor or
+     * {@link GattServiceRequestHandler#onDescriptorWrite} failed,
+     * invoke {@link BluetoothServer#sendErrorResponse},
+     * otherwise {@link BluetoothServer#sendResponse} to send response to client.
+     */
     @Override
     public void onDescriptorWriteRequest(BluetoothDevice device, int requestId, BluetoothGattDescriptor descriptor, boolean preparedWrite, boolean responseNeeded, int offset, byte[] value) {
         Log.d(TAG, String.format("onDescriptorWriteRequest() - device=%s descriptor=%s value=%s",
@@ -137,8 +192,18 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         }
     }
 
+    /**
+     * Callback indicating when a local characteristic was changed.
+     *
+     * <p>Invoke {@link BluetoothServer#notifyCharacteristicChanged} for given characteristic
+     * and every device registered on it's changes.
+     *
+     * @param characteristic changed characteristic
+     * @param registeredDevices devices registered for given characteristic
+     */
     public void onCharacteristicChanged(BluetoothGattCharacteristic characteristic, Set<BluetoothDevice> registeredDevices) {
         Log.d(TAG, "Notify registered devices");
+
         if (registeredDevices.isEmpty()) {
             Log.i(TAG, "No subscribers registered");
             return;

@@ -54,7 +54,7 @@ public class GattCharacteristic implements GattAttribute {
     }
 
     /**
-     * Determine weather characteristic has descriptor with given uuid or not.
+     * Determine wether characteristic has descriptor with given uuid or not.
      *
      * @param uuid descriptor uuid to check
      * @return true if characteristic has descriptor, false otherwise
@@ -216,7 +216,7 @@ public class GattCharacteristic implements GattAttribute {
     }
 
     /**
-     * Determine weather characteristic requires write response.
+     * Determine wether characteristic requires write response.
      *
      * @return true if property is writable without response, false otherwise
      */
