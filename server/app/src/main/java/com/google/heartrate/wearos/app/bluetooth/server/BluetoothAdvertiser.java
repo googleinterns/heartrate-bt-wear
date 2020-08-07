@@ -30,7 +30,7 @@ public class BluetoothAdvertiser {
     /** {@link BluetoothAdvertiser} for advertising process. */
     private final BluetoothLeAdvertiser bluetoothLeAdvertiser;
 
-    /** Advertising callback to receive async responses from {@link BluetoothAdvertiser} . */
+    /** {@link AdvertiseCallback} to receive async responses from {@link BluetoothAdvertiser}. */
     final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
