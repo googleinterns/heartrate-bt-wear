@@ -20,7 +20,7 @@ import static org.junit.Assert.assertThrows;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = {Build.VERSION_CODES.O_MR1}, manifest = Config.NONE)
-public class HeartRateGattCharacteristicManagerTest {
+public class HeartRateMeasurementCharacteristicTest {
 
     private HeartRateMeasurementCharacteristic characteristic;
 
@@ -30,8 +30,8 @@ public class HeartRateGattCharacteristicManagerTest {
     }
 
     /**
-     * Assent setting values to given Heart Rate Characteristic was successful.
-     * <br/>Assents no exceptions was thrown and after set Heart Rate Value and Expended Energy Value
+     * Assert setting values to given Heart Rate Characteristic was successful.
+     * <br/>Assert no exceptions was thrown and after set Heart Rate Value and Expended Energy Value
      * are equal to requested.
      *
      * @param characteristic      characteristic to set value
@@ -48,14 +48,14 @@ public class HeartRateGattCharacteristicManagerTest {
         assertNotThrows(() -> currentHeartRateMeasurementValue[0] = characteristic
                 .getHeartRateMeasurementValue());
         assertNotThrows(() -> currentExpendedEnergyValue[0] = characteristic
-                .getExpandedEnergyValue());
+                .getExpendedEnergyValue());
 
         assertEquals(heartRateValue, currentHeartRateMeasurementValue[0]);
         assertEquals(expendedEnergyValue, currentExpendedEnergyValue[0]);
     }
 
     /**
-     * Assent set values to given Heart Rate Characteristic fails with GattException.
+     * Assert set values to given Heart Rate Characteristic fails with GattException.
      *
      * @param characteristic      characteristic to set value
      * @param heartRateValue      heart rate value to set
@@ -68,7 +68,7 @@ public class HeartRateGattCharacteristicManagerTest {
     }
 
     /**
-     * Assent failed set values to given Heart Rate Characteristic not change stored values.
+     * Assert failed set values to given Heart Rate Characteristic not change stored values.
      *
      * @param characteristic      characteristic to set value
      * @param heartRateValue      heart rate value to set
@@ -85,14 +85,14 @@ public class HeartRateGattCharacteristicManagerTest {
         assertNotThrows(() -> beforeSetHeartRateMeasurementValue[0] = characteristic
                 .getHeartRateMeasurementValue());
         assertNotThrows(() -> beforeSetExpendedEnergyValue[0] = characteristic
-                .getExpandedEnergyValue());
+                .getExpendedEnergyValue());
 
         assertSetValuesFailed(characteristic, heartRateValue, expendedEnergyValue);
 
         assertNotThrows(() -> currentHeartRateMeasurementValue[0] = characteristic
                 .getHeartRateMeasurementValue());
         assertNotThrows(() -> currentExpendedEnergyValue[0] = characteristic
-                .getExpandedEnergyValue());
+                .getExpendedEnergyValue());
 
         assertEquals(beforeSetHeartRateMeasurementValue[0], currentHeartRateMeasurementValue[0]);
         assertEquals(beforeSetExpendedEnergyValue[0], currentExpendedEnergyValue[0]);
@@ -129,11 +129,11 @@ public class HeartRateGattCharacteristicManagerTest {
     @Test
     public void getValuesWithoutSettingThrowExceptionTest() {
         assertThrows(GattException.class, () -> characteristic.getHeartRateMeasurementValue());
-        assertThrows(GattException.class, () -> characteristic.getExpandedEnergyValue());
+        assertThrows(GattException.class, () -> characteristic.getExpendedEnergyValue());
     }
 
     @Test
-    public void whenExpendedEnergyNotPresentedSetAndGetTest() {
+    public void whenExpendedEnergyNotPresentSetAndGetTest() {
         int heartRateUInt16Value = CharacteristicsArgumentProvider.provide(IN_UINT16)[0];
         int expendedEnergyUInt16Value = CharacteristicsArgumentProvider.provide(IN_UINT16)[1];
 
@@ -147,13 +147,13 @@ public class HeartRateGattCharacteristicManagerTest {
     }
 
     @Test
-    public void getExpendedEnergyWhenNotPresentedTest() {
+    public void getExpendedEnergyWhenNotPresentTest() {
         int heartRateUInt16Value = CharacteristicsArgumentProvider.provide(IN_UINT16)[0];
         assertNotThrows(() -> characteristic.setHeartRateCharacteristicValue(heartRateUInt16Value));
-        assertThrows(GattException.class, () -> characteristic.getExpandedEnergyValue());
+        assertThrows(GattException.class, () -> characteristic.getExpendedEnergyValue());
 
         int heartRateUInt8Value = CharacteristicsArgumentProvider.provide(IN_UINT16)[0];
         assertNotThrows(() -> characteristic.setHeartRateCharacteristicValue(heartRateUInt8Value));
-        assertThrows(GattException.class, () -> characteristic.getExpandedEnergyValue());
+        assertThrows(GattException.class, () -> characteristic.getExpendedEnergyValue());
     }
 }

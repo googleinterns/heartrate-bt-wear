@@ -98,12 +98,12 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
      * Get expended energy value.
      *
      * @return expended energy value
-     * @throws GattException if expended energy is not presented or in case of wrong format or offset for expended energy value
+     * @throws GattException if expended energy is not present or in case of wrong format or offset for expended energy value
      */
-    public int getExpandedEnergyValue() throws GattException {
+    public int getExpendedEnergyValue() throws GattException {
         Log.i(TAG, "Get expended energy value");
 
-        assertExpandedEnergyIsPresented();
+        assertExpendedEnergyIsPresent();
 
         /* HR is in UInt8 format => EE offset is base */
         /* HR is in UInt16 format => EE offset is shifted */
@@ -127,7 +127,7 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
      * <br>Heart Rate Format (0) -> UInt8 Format, (1) -> UInt16 Format
      * <br>Sensor Contact Status (00) -> Not Supported
      * <br>Energy Expended (1) -> Field Present
-     * <br>RR-Interval (0) -> Field not presented
+     * <br>RR-Interval (0) -> Field Not Present
      * <br>Unused (000)
      *
      * @param heartRateMeasurement (bpm) heart rate measurement value in UInt8/UInt16 format
@@ -187,7 +187,7 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
      * <br>Heart Rate Format (0) -> UInt8 Format, (1) -> UInt16 Format
      * <br>Sensor Contact Status (00) -> Not Supported
      * <br>Energy Expended (0) -> Field not Present
-     * <br>RR-Interval (0) -> Field not presented
+     * <br>RR-Interval (0) -> Field Not Present
      * <br>Unused (000)
      *
      * @param heartRateMeasurement (bpm) heart rate measurement value in UInt8/UInt16 format
@@ -229,14 +229,14 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
     }
 
     /**
-     * Assert Expended Energy is supported.
+     * Assert Expended Energy is present.
      *
-     * @throws GattException if not supported
+     * @throws GattException if not present
      */
-    private void assertExpandedEnergyIsPresented() throws GattException {
-        if (!isExpandedEnergyPresent()) {
-            Log.w(TAG, "Expended energy value is not presented");
-            throw new GattException("Expended energy value is not presented",
+    private void assertExpendedEnergyIsPresent() throws GattException {
+        if (!isExpendedEnergyPresent()) {
+            Log.w(TAG, "Expended energy value is not present");
+            throw new GattException("Expended energy value is not present",
                     BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED);
         }
     }
@@ -260,7 +260,7 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
      *
      * @return true is UInt16, false if UInt8
      */
-    private boolean isExpandedEnergyPresent() throws GattException {
+    private boolean isExpendedEnergyPresent() throws GattException {
         int flags = getIntValue(
                 BluetoothGattCharacteristic.FORMAT_UINT8,
                 FLAGS_OFFSET);

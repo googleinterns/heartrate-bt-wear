@@ -43,7 +43,7 @@ public class SetHeartRateCharacteristicValueInRangeTest {
 
     @Test
     public void test() {
-        HeartRateGattCharacteristicManagerTest.assertSetValuesSuccessful(characteristic,
+        HeartRateMeasurementCharacteristicTest.assertSetValuesSuccessful(characteristic,
                 heartRateMeasurementValue, expendedEnergyValue);
     }
 }

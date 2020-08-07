@@ -47,7 +47,7 @@ public class GattService implements GattAttribute {
     }
 
     /**
-     * Determine weather service has characteristic with given uuid or not.
+     * Determine wether service has characteristic with given uuid or not.
      *
      * @param uuid characteristic uuid to check
      * @return true if service has characteristic, false otherwise
