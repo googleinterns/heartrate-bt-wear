@@ -17,16 +17,30 @@ import java.util.UUID;
  * and specifies set/get operation for Heart Rate Measurement Characteristic characteristic.
  * <p>
  * Fields included in the characteristic:
- * <table>
- *  <thead>
+ * <table border="1">
+ *  <thead align="center">
  *      <tr><th>Field</th><th>Requirement</th><th>Format</th></tr>
  *  <thead>
- *  <tbody>
+ *  <tbody align="center">
  *      <tr><td> Flags </td><td> Mandatory </td><td> UInt8 </td></tr>
  *      <tr><td> Heart Rate Measurement </td><td> Mandatory </td><td> UInt8/UInt16 </td></tr>
  *      <tr><td> Energy Expended </td><td> Optional, Mandatory if Energy Expended flag </td><td> UInt16 </td></tr>
  *      <tr><td> RR-Interval </td><td> Optional, Not supported </td><td> - </td></tr>
  *      <tr><td> Transmission Interval </td><td> Optional, Not supported </td><td> - </td></tr>
+ *  </tbody>
+ * </table>
+ * <p>
+ * Flags bits (from right to left) according to characteristic values:
+ * <table border="1">
+ *  <thead align="center">
+ *      <tr><th></th><th>Heart Rate Format</th><th>Sensor Contact Status</th><th>Energy Expended</th><th>RR-Interval</th><th>Unused</th></tr>
+ *  <thead>
+ *  <tbody align="center">
+ *      <tr><td> Value </td>
+ *          <td> 0 / 1 </td><td> 00 </td><td> 0 / 1 </td><td> 0 </td><td> 000 </td></tr>
+ *      <tr><td> Meaning </td>
+ *          <td> UInt8 / UInt16 </td><td> Not Supported  </td><td> Not Present / Present </td>
+ *          <td> Not Present </td><td> Unused </td></tr>
  *  </tbody>
  * </table>
  * <p>
@@ -122,13 +136,6 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
 
     /**
      * Set given Heart Rate Measurement and Expended Energy values to the characteristic.
-     * <p>
-     * Flags 8bit format 0b00000000 from right to left:
-     * <br>Heart Rate Format (0) -> UInt8 Format, (1) -> UInt16 Format
-     * <br>Sensor Contact Status (00) -> Not Supported
-     * <br>Energy Expended (1) -> Field Present
-     * <br>RR-Interval (0) -> Field Not Present
-     * <br>Unused (000)
      *
      * @param heartRateMeasurement (bpm) heart rate measurement value in UInt8/UInt16 format
      * @param expendedEnergy       (kiloJoules) expended energy value in UInt16 format
@@ -182,13 +189,6 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
 
     /**
      * Set given Heart Rate Measurement value to the characteristic.
-     * <p>
-     * Flags 8bit format 0b00000000 from right to left:
-     * <br>Heart Rate Format (0) -> UInt8 Format, (1) -> UInt16 Format
-     * <br>Sensor Contact Status (00) -> Not Supported
-     * <br>Energy Expended (0) -> Field not Present
-     * <br>RR-Interval (0) -> Field Not Present
-     * <br>Unused (000)
      *
      * @param heartRateMeasurement (bpm) heart rate measurement value in UInt8/UInt16 format
      * @throws GattException in case of wrong arguments format or offset for heart rate characteristic values
