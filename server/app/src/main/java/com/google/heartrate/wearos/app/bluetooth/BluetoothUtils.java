@@ -50,7 +50,7 @@ public class BluetoothUtils {
      * Get {@link BluetoothManager}.
      *
      * @param context application context
-     * @return bluetooth manager
+     * @return {@link BluetoothManager}
      * @throws GattException if bluetooth is not supported
      */
     public static BluetoothManager getBluetoothManager(Context context) throws GattException {
@@ -67,7 +67,7 @@ public class BluetoothUtils {
      * Get {@link BluetoothAdapter}.
      *
      * @param context application context
-     * @return bluetooth adapter
+     * @return {@link BluetoothAdapter}
      * @throws GattException if bluetooth is not supported
      */
     public static BluetoothAdapter getBluetoothAdapter(Context context) throws GattException {
@@ -85,7 +85,7 @@ public class BluetoothUtils {
      * Get {@link BluetoothLeAdvertiser}.
      *
      * @param context application context
-     * @return bluetooth advertiser
+     * @return {@link BluetoothLeAdvertiser}
      * @throws GattException if bluetooth advertising is not supported
      */
     public static BluetoothLeAdvertiser getBluetoothLeAdvertiser(Context context) throws GattException {
@@ -103,9 +103,9 @@ public class BluetoothUtils {
      * Get {@link BluetoothGattServer}.
      *
      * @param context application context
-     * @param callback server callback
-     * @return bluetooth gatt server
-     * @throws GattException if unable to create gatt server
+     * @param callback {@link BluetoothGattServerCallback} to configure {@link BluetoothGattServer} with
+     * @return {@link BluetoothGattServer} configured with given {@link BluetoothGattServerCallback}
+     * @throws GattException if unable to create {@link BluetoothGattServer}
      */
     public static BluetoothGattServer getBluetoothGattServer(Context context, BluetoothGattServerCallback callback) throws GattException {
         BluetoothManager bluetoothManager = getBluetoothManager(context);
