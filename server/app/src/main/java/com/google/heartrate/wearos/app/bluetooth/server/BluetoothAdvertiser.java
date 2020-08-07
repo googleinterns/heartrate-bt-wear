@@ -79,7 +79,7 @@ public class BluetoothAdvertiser {
     /**
      * Stop advertising to clients about server existence.
      */
-    public void startAdvertisingServices() {
+    public void stopAdvertisingServices() {
         Log.d(TAG, "Stopping advertising");
 
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
