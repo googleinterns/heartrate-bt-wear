@@ -28,10 +28,10 @@ public class BluetoothAdvertiser {
     private static final String TAG = BluetoothAdvertiser.class.getSimpleName();
 
     /** {@link BluetoothAdvertiser} for advertising process. */
-    private final BluetoothLeAdvertiser mBluetoothLeAdvertiser;
+    private final BluetoothLeAdvertiser bluetoothLeAdvertiser;
 
     /** Advertising callback to receive async responses from {@link BluetoothAdvertiser} . */
-    final AdvertiseCallback mAdvertiseCallback = new AdvertiseCallback() {
+    final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             Log.i(TAG, "BluetoothLE Advertise Started.");
@@ -44,7 +44,7 @@ public class BluetoothAdvertiser {
     };
 
     public BluetoothAdvertiser(Context context) throws GattException {
-        mBluetoothLeAdvertiser = BluetoothUtils.getBluetoothLeAdvertiser(context);
+        bluetoothLeAdvertiser = BluetoothUtils.getBluetoothLeAdvertiser(context);
     }
 
     /**
@@ -70,10 +70,10 @@ public class BluetoothAdvertiser {
             advertiseData.addServiceUuid(new ParcelUuid(serviceUuid));
         }
 
-        mBluetoothLeAdvertiser.startAdvertising(
+        bluetoothLeAdvertiser.startAdvertising(
                 advertiseSettings.build(),
                 advertiseData.build(),
-                mAdvertiseCallback);
+                advertiseCallback);
     }
 
     /**
@@ -82,6 +82,6 @@ public class BluetoothAdvertiser {
     public void stop() {
         Log.d(TAG, "Stopping advertising");
 
-        mBluetoothLeAdvertiser.stopAdvertising(mAdvertiseCallback);
+        bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
     }
 }
