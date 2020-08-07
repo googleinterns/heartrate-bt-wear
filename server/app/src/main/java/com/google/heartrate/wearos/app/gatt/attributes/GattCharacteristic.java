@@ -20,7 +20,7 @@ import java.util.UUID;
 public class GattCharacteristic implements GattAttribute {
 
     /** {@link BluetoothGattCharacteristic} for characteristic. */
-    private final BluetoothGattCharacteristic mBluetoothGattCharacteristic;
+    private final BluetoothGattCharacteristic bluetoothGattCharacteristic;
 
     /** Descriptors which characteristic include. */
     private final HashMap<UUID, GattDescriptor> descriptorByUuid = new HashMap<>();
@@ -32,7 +32,7 @@ public class GattCharacteristic implements GattAttribute {
      * @param permissions characteristic permissions
      */
     public GattCharacteristic(UUID uuid, int properties, int permissions) {
-        mBluetoothGattCharacteristic =
+        bluetoothGattCharacteristic =
                 new BluetoothGattCharacteristic(uuid, properties, permissions);
     }
 
@@ -49,7 +49,7 @@ public class GattCharacteristic implements GattAttribute {
 
         for (GattDescriptor gattDescriptor : gattDescriptors) {
             descriptorByUuid.put(gattDescriptor.getUUid(), gattDescriptor);
-            mBluetoothGattCharacteristic.addDescriptor(gattDescriptor.getBluetoothGattDescriptor());
+            bluetoothGattCharacteristic.addDescriptor(gattDescriptor.getBluetoothGattDescriptor());
         }
     }
 
@@ -114,7 +114,7 @@ public class GattCharacteristic implements GattAttribute {
      */
     protected byte[] getValue() throws GattException {
         try {
-            byte[] value = mBluetoothGattCharacteristic.getValue();
+            byte[] value = bluetoothGattCharacteristic.getValue();
             if (value == null) {
                 throw new GattException(String.format("Value can not be " +
                         "got from characteristic %s.", getUUid()));
@@ -135,7 +135,7 @@ public class GattCharacteristic implements GattAttribute {
      */
     protected int getIntValue(int format, int offset) throws GattException {
         try {
-            Integer value = mBluetoothGattCharacteristic.getIntValue(format, offset);
+            Integer value = bluetoothGattCharacteristic.getIntValue(format, offset);
             if (value == null) {
                 throw new GattException(String.format("Value in format %d with offset %d can not be " +
                         "got from characteristic %s.", format, offset, getUUid()));
@@ -155,7 +155,7 @@ public class GattCharacteristic implements GattAttribute {
      * @throws GattException if value can not be set
      */
     protected void setIntValue(int value, int format, int offset) throws GattException {
-        if (!mBluetoothGattCharacteristic.setValue(value, format, offset)) {
+        if (!bluetoothGattCharacteristic.setValue(value, format, offset)) {
             throw new GattException(String.format("Value %d in format %d with offset %d has not been " +
                     "set to characteristic %s.", value, format, offset, getUUid()));
         }
@@ -168,7 +168,7 @@ public class GattCharacteristic implements GattAttribute {
      * @throws GattException if value can not be set
      */
     protected void setValue(byte[] value) throws GattException {
-        if (!mBluetoothGattCharacteristic.setValue(value)) {
+        if (!bluetoothGattCharacteristic.setValue(value)) {
             throw new GattException(String.format("Value %s can not be " +
                     "set to characteristic %s.", Arrays.toString(value), getUUid()));
         }
@@ -180,7 +180,7 @@ public class GattCharacteristic implements GattAttribute {
      * @throws GattException when characteristic has no read permissions
      */
     public void assertCharacteristicReadable() throws GattException {
-        if ((mBluetoothGattCharacteristic.getProperties() &
+        if ((bluetoothGattCharacteristic.getProperties() &
                 (BluetoothGattCharacteristic.PROPERTY_READ)) == 0) {
             throw new GattException(String.format("Characteristic %s has no read permissions", getUUid()),
                     BluetoothGatt.GATT_READ_NOT_PERMITTED);
@@ -193,7 +193,7 @@ public class GattCharacteristic implements GattAttribute {
      * @throws GattException when characteristic has no write permissions
      */
     public void assertCharacteristicWritable() throws GattException {
-        if ((mBluetoothGattCharacteristic.getProperties() &
+        if ((bluetoothGattCharacteristic.getProperties() &
                 (BluetoothGattCharacteristic.PROPERTY_WRITE |
                         BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)) == 0) {
             throw new GattException(String.format("Characteristic %s has no write permissions", getUUid()),
@@ -207,7 +207,7 @@ public class GattCharacteristic implements GattAttribute {
      * @throws GattException when characteristic has no notify permissions
      */
     public void assertCharacteristicNotifiable() throws GattException {
-        if ((mBluetoothGattCharacteristic.getProperties() &
+        if ((bluetoothGattCharacteristic.getProperties() &
                 BluetoothGattCharacteristic.PROPERTY_NOTIFY) == 0) {
             throw new GattException(String.format("Characteristic %s has no write permissions", getUUid()),
                     BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED);
@@ -220,7 +220,7 @@ public class GattCharacteristic implements GattAttribute {
      * @return true if property is writable without response, false otherwise
      */
     public boolean isWriteResponseRequired() {
-        return (mBluetoothGattCharacteristic.getProperties() &
+        return (bluetoothGattCharacteristic.getProperties() &
                 BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) == 0;
     }
 
@@ -230,11 +230,11 @@ public class GattCharacteristic implements GattAttribute {
      * @return {@link BluetoothGattCharacteristic} for characteristic
      */
     public BluetoothGattCharacteristic getBluetoothGattCharacteristic() {
-        return mBluetoothGattCharacteristic;
+        return bluetoothGattCharacteristic;
     }
 
     @Override
     public UUID getUUid() {
-        return mBluetoothGattCharacteristic.getUuid();
+        return bluetoothGattCharacteristic.getUuid();
     }
 }

@@ -17,7 +17,7 @@ import java.util.UUID;
 public class GattService implements GattAttribute {
 
     /** {@link BluetoothGattService} for service. */
-    private final BluetoothGattService mBluetoothGattService;
+    private final BluetoothGattService bluetoothGattService;
 
     /** Characteristics which service include. */
     private final HashMap<UUID, GattCharacteristic> characteristicByUuid = new HashMap<>();
@@ -28,7 +28,7 @@ public class GattService implements GattAttribute {
      * @param type service type
      */
     public GattService(UUID uuid, int type) {
-        mBluetoothGattService = new BluetoothGattService(uuid, type);
+        bluetoothGattService = new BluetoothGattService(uuid, type);
     }
 
     /**
@@ -42,7 +42,7 @@ public class GattService implements GattAttribute {
 
         for (GattCharacteristic gattCharacteristic : gattCharacteristics) {
             characteristicByUuid.put(gattCharacteristic.getUUid(), gattCharacteristic);
-            mBluetoothGattService.addCharacteristic(gattCharacteristic.getBluetoothGattCharacteristic());
+            bluetoothGattService.addCharacteristic(gattCharacteristic.getBluetoothGattCharacteristic());
         }
     }
 
@@ -78,11 +78,11 @@ public class GattService implements GattAttribute {
      * @return {@link BluetoothGattService} for service
      */
     public BluetoothGattService getBluetoothGattService() {
-        return mBluetoothGattService;
+        return bluetoothGattService;
     }
 
     @Override
     public UUID getUUid() {
-        return mBluetoothGattService.getUuid();
+        return bluetoothGattService.getUuid();
     }
 }

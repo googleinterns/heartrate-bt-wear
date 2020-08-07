@@ -20,7 +20,7 @@ import java.util.UUID;
 public class GattDescriptor implements GattAttribute {
 
     /** {@link BluetoothGattDescriptor} for descriptor. */
-    private final BluetoothGattDescriptor mBluetoothGattDescriptor;
+    private final BluetoothGattDescriptor bluetoothGattDescriptor;
 
     /**
      * Configure {@link BluetoothGattDescriptor} with given parameters.
@@ -29,7 +29,7 @@ public class GattDescriptor implements GattAttribute {
      * @param permissions descriptor permissions
      */
     public GattDescriptor(UUID uuid, int permissions) {
-        mBluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, permissions);
+        bluetoothGattDescriptor = new BluetoothGattDescriptor(uuid, permissions);
     }
 
     /**
@@ -66,7 +66,7 @@ public class GattDescriptor implements GattAttribute {
      * @throws GattException if can not set value to descriptor
      */
     protected void setValue(byte[] value) throws GattException {
-        if (!mBluetoothGattDescriptor.setValue(value)) {
+        if (!bluetoothGattDescriptor.setValue(value)) {
             throw new GattException(String.format("Value %s can not be set to descriptor.", Arrays.toString(value)));
         }
     }
@@ -79,7 +79,7 @@ public class GattDescriptor implements GattAttribute {
      */
     protected byte[] getValue() throws GattException {
         try {
-            return mBluetoothGattDescriptor.getValue();
+            return bluetoothGattDescriptor.getValue();
         } catch (Exception e) {
             throw new GattException(e);
         }
@@ -91,7 +91,7 @@ public class GattDescriptor implements GattAttribute {
      * @throws GattException when descriptor has no read permissions
      */
     public void assertDescriptorReadable() throws GattException {
-        if ((mBluetoothGattDescriptor.getPermissions() &
+        if ((bluetoothGattDescriptor.getPermissions() &
                 BluetoothGattCharacteristic.PERMISSION_READ) == 0) {
             throw new GattException(String.format("Descriptor %s has no read permissions", getUUid()),
                     BluetoothGatt.GATT_READ_NOT_PERMITTED);
@@ -104,7 +104,7 @@ public class GattDescriptor implements GattAttribute {
      * @throws GattException when descriptor has no write permissions
      */
     public void assertDescriptorWritable() throws GattException {
-        if ((mBluetoothGattDescriptor.getPermissions() &
+        if ((bluetoothGattDescriptor.getPermissions() &
                 BluetoothGattCharacteristic.PERMISSION_WRITE) == 0) {
             throw new GattException(String.format("Descriptor %s has no write permissions", getUUid()),
                     BluetoothGatt.GATT_WRITE_NOT_PERMITTED);
@@ -117,11 +117,11 @@ public class GattDescriptor implements GattAttribute {
      * @return {@link BluetoothGattDescriptor} for descriptor
      */
     BluetoothGattDescriptor getBluetoothGattDescriptor() {
-        return mBluetoothGattDescriptor;
+        return bluetoothGattDescriptor;
     }
 
     @Override
     public UUID getUUid() {
-        return mBluetoothGattDescriptor.getUuid();
+        return bluetoothGattDescriptor.getUuid();
     }
 }
