@@ -70,7 +70,7 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
     public HeartRateMeasurementCharacteristic() {
         super(HEART_RATE_MEASUREMENT_UUID,
                 BluetoothGattCharacteristic.PROPERTY_NOTIFY,
-                BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+                /* No permissions */ 0,
                 new GattDescriptor[] {new ClientCharacteristicConfigurationDescriptor()});
     }
 
