@@ -42,12 +42,12 @@ public class BluetoothUtils {
         }
 
         if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            throw new GattException("Bluetooth LE  is not supported. No FEATURE_BLUETOOTH_LE found.");
+            throw new GattException("Bluetooth LE is not supported. No FEATURE_BLUETOOTH_LE found.");
         }
     }
 
     /**
-     * Get bluetooth manager.
+     * Get {@link BluetoothManager}.
      *
      * @param context application context
      * @return bluetooth manager
@@ -64,7 +64,7 @@ public class BluetoothUtils {
     }
 
     /**
-     * Get bluetooth adapter.
+     * Get {@link BluetoothAdapter}.
      *
      * @param context application context
      * @return bluetooth adapter
@@ -82,7 +82,7 @@ public class BluetoothUtils {
     }
 
     /**
-     * Get bluetooth advertiser.
+     * Get {@link BluetoothLeAdvertiser}.
      *
      * @param context application context
      * @return bluetooth advertiser
@@ -93,14 +93,14 @@ public class BluetoothUtils {
         BluetoothLeAdvertiser advertiser = adapter.getBluetoothLeAdvertiser();
 
         if (advertiser == null) {
-            throw new GattException("Bluetooth advertising is not supported. Can not get BluetoothLeAdvertiser.");
+            throw new GattException("Bluetooth advertising is not supported. Cannot get BluetoothLeAdvertiser.");
         }
 
         return advertiser;
     }
 
     /**
-     * Get bluetooth gatt server.
+     * Get {@link BluetoothGattServer}.
      *
      * @param context application context
      * @param callback server callback
