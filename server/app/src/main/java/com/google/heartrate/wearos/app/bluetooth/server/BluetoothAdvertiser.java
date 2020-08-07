@@ -18,9 +18,9 @@ import java.util.UUID;
  * {@link BluetoothAdvertiser} is the wrapper over {@link BluetoothLeAdvertiser} class.
  * <p>
  * Advertising allows devices to broadcast information defining their intentions.
- * Peripheral uses advertising to allow centrals to find it and, subsequently, to establish a connection with it.
+ * Server uses advertising to allow clients to find it and, subsequently, to establish a connection with it.
  * <p>
- * A peripheral can use {@link BluetoothAdvertiser} to advertise its existence and show it's complete or partial
+ * A server can use {@link BluetoothAdvertiser} to advertise its existence and show it's complete or partial
  * list of GATT services it offers.
  *
  */
@@ -48,11 +48,11 @@ public class BluetoothAdvertiser {
     }
 
     /**
-     * Start advertising centrals about peripheral existence.
+     * Start advertising to clients about server existence.
      *
-     * @param serviceUuids list of GATT services peripheral offers
+     * @param serviceUuids list of GATT services server offers
      */
-    public void start(Set<UUID> serviceUuids) {
+    public void startAdvertisingServices(Set<UUID> serviceUuids) {
         Log.d(TAG, "Starting advertising");
 
         AdvertiseSettings.Builder advertiseSettings = new AdvertiseSettings.Builder()
@@ -77,9 +77,9 @@ public class BluetoothAdvertiser {
     }
 
     /**
-     * Stop advertising centrals about peripheral existence.
+     * Stop advertising to clients about server existence.
      */
-    public void stop() {
+    public void startAdvertisingServices() {
         Log.d(TAG, "Stopping advertising");
 
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
