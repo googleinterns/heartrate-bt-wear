@@ -12,13 +12,6 @@ import java.util.stream.IntStream;
  */
 public class CharacteristicsArgumentProvider {
 
-    public enum Range {
-        IN_UINT8,
-        IN_UINT16,
-        OUT_UINT8,
-        OUT_UINT16;
-    }
-
     private static int[] outUInt8RangeValues = new int[]{
             FormatUtils.MIN_UINT - 1, FormatUtils.MAX_UINT8 + 1, FormatUtils.MAX_UINT16};
 
@@ -29,8 +22,7 @@ public class CharacteristicsArgumentProvider {
     private static int[] outUInt16RangeValues = new int[]{
             FormatUtils.MIN_UINT - 1, FormatUtils.MAX_UINT16 + 1,
             Integer.MAX_VALUE, Integer.MIN_VALUE,
-            -FormatUtils.MAX_UINT16
-    };
+            -FormatUtils.MAX_UINT16};
 
     private static int[] inUInt16RangeValues = IntStream
             .rangeClosed(0, 16)
@@ -95,5 +87,12 @@ public class CharacteristicsArgumentProvider {
                 return inUInt16RangeValues;
         }
         throw new AssertionError("Format not supported");
+    }
+
+    public enum Range {
+        IN_UINT8,
+        IN_UINT16,
+        OUT_UINT8,
+        OUT_UINT16
     }
 }

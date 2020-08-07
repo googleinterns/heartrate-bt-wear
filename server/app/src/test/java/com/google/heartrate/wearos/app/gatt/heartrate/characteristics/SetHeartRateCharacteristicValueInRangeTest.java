@@ -3,6 +3,7 @@ package com.google.heartrate.wearos.app.gatt.heartrate.characteristics;
 import android.os.Build;
 
 import com.google.heartrate.wearos.app.gatt.CharacteristicsArgumentProvider;
+import com.google.heartrate.wearos.app.gatt.GattException;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -42,7 +43,7 @@ public class SetHeartRateCharacteristicValueInRangeTest {
     }
 
     @Test
-    public void test() {
+    public void test() throws GattException {
         HeartRateMeasurementCharacteristicTest.assertSetValuesSuccessful(characteristic,
                 heartRateMeasurementValue, expendedEnergyValue);
     }
