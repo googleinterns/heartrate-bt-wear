@@ -25,21 +25,21 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     private static final String TAG = HeartRateServiceRequestHandler.class.getSimpleName();
 
     /** {@link GattService} for Heart Rate service. */
-    private final HeartRateGattService mHeartRateGattService;
+    private final HeartRateGattService heartRateGattService;
 
     /** Sensor listener for heart rate sensor. */
-    private final HeartRateSensorListener mHeartRateSensorListener;
+    private final HeartRateSensorListener heartRateSensorListener;
 
-    /** Server callback to interact with remote device. */
-    private BluetoothServerCallback mBluetoothServerCallback;
+    /** {@link BluetoothServerCallback} to interact with remote device. */
+    private BluetoothServerCallback bluetoothServerCallback;
 
-    /** Storage for all devices registered to Heart Rate Measurement characteristic. */
-    private BluetoothDeviceStorage mRegisteredDevices;
+    /** Storage for all {@link BluetoothDevice} registered to Heart Rate Measurement characteristic. */
+    private BluetoothDeviceStorage registeredDeviceStorage;
 
     public HeartRateServiceRequestHandler(HeartRateSensorListener heartRateSensorListener) {
-        mHeartRateSensorListener = heartRateSensorListener;
-        mHeartRateGattService = new HeartRateGattService();
-        mRegisteredDevices = new BluetoothDeviceStorage();
+        this.heartRateSensorListener = heartRateSensorListener;
+        heartRateGattService = new HeartRateGattService();
+        registeredDeviceStorage = new BluetoothDeviceStorage();
     }
 
     /**
@@ -48,8 +48,8 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public void onServiceAdded(BluetoothServerCallback bluetoothServerCallback) {
-        mBluetoothServerCallback = bluetoothServerCallback;
-        mHeartRateSensorListener.registerSubscriber(this);
+        this.bluetoothServerCallback = bluetoothServerCallback;
+        heartRateSensorListener.registerSubscriber(this);
     }
 
     /**
@@ -58,8 +58,8 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public void onServiceRemoved() {
-        mHeartRateSensorListener.unregisterSubscriber(this);
-        mRegisteredDevices.removeAllDevices();
+        heartRateSensorListener.unregisterSubscriber(this);
+        registeredDeviceStorage.removeAllDevices();
     }
 
     /**
@@ -68,7 +68,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public void onDeviceDisconnected(BluetoothDevice device) {
-        mRegisteredDevices.removeDevice(device);
+        registeredDeviceStorage.removeDevice(device);
     }
 
     /**
@@ -85,7 +85,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public byte[] onDescriptorRead(BluetoothDevice device, BluetoothGattDescriptor descriptor, int offset) {
-        if (mRegisteredDevices.contains(device)) {
+        if (registeredDeviceStorage.contains(device)) {
             return BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
         } else {
             return BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
@@ -108,10 +108,10 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     public void onDescriptorWrite(BluetoothDevice device, BluetoothGattDescriptor descriptor, int offset, byte[] value) {
         if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
             Log.d(TAG, String.format("Subscribe device %s to notifications", device));
-            mRegisteredDevices.addDevice(device);
+            registeredDeviceStorage.addDevice(device);
         } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
             Log.d(TAG, String.format("Unsubscribe device %s from notifications", device));
-            mRegisteredDevices.removeDevice(device);
+            registeredDeviceStorage.removeDevice(device);
         }
     }
 
@@ -125,11 +125,11 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     public void onHeartRateValueChanged(int value) {
         try {
             HeartRateMeasurementCharacteristic heartRateMeasurementCharacteristic
-                = mHeartRateGattService.getHeartRateMeasurementCharacteristic();
+                = heartRateGattService.getHeartRateMeasurementCharacteristic();
             heartRateMeasurementCharacteristic.setHeartRateCharacteristicValue(value);
 
-            mBluetoothServerCallback.onCharacteristicChanged(heartRateMeasurementCharacteristic.getBluetoothGattCharacteristic(),
-                    mRegisteredDevices.getAllDevices());
+            bluetoothServerCallback.onCharacteristicChanged(heartRateMeasurementCharacteristic.getBluetoothGattCharacteristic(),
+                    registeredDeviceStorage.getAllDevices());
 
         } catch (GattException e) {
             e.printStackTrace();
@@ -138,6 +138,6 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
 
     @Override
     public BluetoothGattService getBluetoothGattService() {
-        return mHeartRateGattService.getBluetoothGattService();
+        return heartRateGattService.getBluetoothGattService();
     }
 }

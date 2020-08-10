@@ -93,6 +93,6 @@ public class HeartRateSensorListener implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+        Log.d(TAG, "onAccuracyChanged() unsupported!");
     }
 }
