@@ -136,7 +136,7 @@ public class BluetoothServer {
     public void start() {
         Log.v(TAG, "Starting heart rate server");
 
-        bluetoothAdvertiser.start(gattRequestHandlerByServiceUuid.keySet());
+        bluetoothAdvertiser.startAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
     }
 
     /**
@@ -149,7 +149,7 @@ public class BluetoothServer {
             requestHandler.onServiceRemoved();
         }
         bluetoothGattServer.close();
-        bluetoothAdvertiser.stop();
+        bluetoothAdvertiser.stopAdvertisingServices();
     }
 
     /**
