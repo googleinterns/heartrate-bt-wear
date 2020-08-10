@@ -24,8 +24,8 @@ import java.util.UUID;
  * {@link BluetoothServer} is wrapper over {@link BluetoothGattServer}
  * allowing set up {@link BluetoothGattServer}, add services to be hosted in server,
  * listen incoming requests and send responses.
- * <p>
- * {@link BluetoothServer} provides base request handling. To make {@link BluetoothServer}
+ * 
+ * <p>{@link BluetoothServer} provides base request handling. To make {@link BluetoothServer}
  * compatible with all service type, all specific request handling process must be implemented in
  * {@link GattServiceRequestHandler}.
  */

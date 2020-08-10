@@ -16,6 +16,7 @@ import java.util.Set;
 
 /**
  * Class is used to implement {@link BluetoothServer} callbacks.
+ *
  * <p>General-purpose for all read/write services attributes requests.
  * Redirects all request to special handler for each service.
  */

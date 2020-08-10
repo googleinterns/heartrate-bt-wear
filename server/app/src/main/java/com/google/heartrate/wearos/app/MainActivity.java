@@ -7,56 +7,73 @@ import android.widget.TextView;
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.HeartRateServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.gatt.heartrate.service.HeartRateGattService;
 import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
 import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
 
 
 /**
- * Application main activity sets up server and starts it (not supported yet).
+ * Application main activity sets up heart rate server and show current heart rate.
+ *
+ * <p>Used only for testing {@link BluetoothServer} with {@link HeartRateGattService} hosted.
  */
 public class MainActivity extends WearableActivity implements HeartRateValueSubscriber {
 
+    /** {@link TextView} to show current heart rate. */
     private TextView mTextView;
-    private BluetoothServer mBluetoothServer;
-    private HeartRateServiceRequestHandler mHeartRateServiceRequestHandler;
-    private HeartRateSensorListener mHeartRateSensorListener;
+
+    /** {@link BluetoothServer} for heart rate service hosting. */
+    private BluetoothServer bluetoothServer;
+
+    /** Sensor listener to get heart rate. */
+    private HeartRateSensorListener heartRateSensorListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
+        mTextView = findViewById(R.id.text);
+
+        startHeartRateServer();
+    }
+
+    /**
+     * Start server with heart rate service hosted.
+     */
+    private void startHeartRateServer() {
         try {
-            mHeartRateSensorListener = new HeartRateSensorListener(this);
-            mHeartRateSensorListener.registerSubscriber(this);
+            heartRateSensorListener = new HeartRateSensorListener(this);
+            heartRateSensorListener.registerSubscriber(this);
 
-            mBluetoothServer = new BluetoothServer(this);
+            bluetoothServer = new BluetoothServer(this);
 
-            mHeartRateServiceRequestHandler = new HeartRateServiceRequestHandler(mHeartRateSensorListener);
-            mBluetoothServer.registerGattServiceHandler(mHeartRateServiceRequestHandler);
+            HeartRateServiceRequestHandler heartRateServiceRequestHandler
+                    = new HeartRateServiceRequestHandler(heartRateSensorListener);
+            bluetoothServer.registerGattServiceHandler(heartRateServiceRequestHandler);
 
-            mBluetoothServer.start();
+            bluetoothServer.start();
         } catch (GattException e) {
             e.printStackTrace();
         }
-        mTextView = findViewById(R.id.text);
     }
 
     @Override
     protected void onResume() {
-        mBluetoothServer.registerReceiver();
+        bluetoothServer.registerReceiver();
         super.onResume();
     }
 
     @Override
     protected void onPause() {
-        mBluetoothServer.unregisterReceiver();
+        bluetoothServer.unregisterReceiver();
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        mBluetoothServer.stop();
+        bluetoothServer.stop();
+        heartRateSensorListener.unregisterSubscriber(this);
         super.onDestroy();
     }
 

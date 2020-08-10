@@ -16,11 +16,11 @@ import java.util.UUID;
 
 /**
  * {@link BluetoothAdvertiser} is the wrapper over {@link BluetoothLeAdvertiser} class.
- * <p>
- * Advertising allows devices to broadcast information defining their intentions.
+ *
+ * <p>Advertising allows devices to broadcast information defining their intentions.
  * Server uses advertising to allow clients to find it and, subsequently, to establish a connection with it.
- * <p>
- * A server can use {@link BluetoothAdvertiser} to advertise its existence and show it's complete or partial
+ *
+ * <p>A server can use {@link BluetoothAdvertiser} to advertise its existence and show it's complete or partial
  * list of GATT services it offers.
  *
  */
