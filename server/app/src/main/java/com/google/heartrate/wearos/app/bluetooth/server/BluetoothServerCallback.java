@@ -23,10 +23,10 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
     private static final String TAG = BluetoothServerCallback.class.getSimpleName();
 
     /** {@link BluetoothServer} to handle requests received from callback. */
-    public final BluetoothServer mBluetoothServer;
+    public final BluetoothServer bluetoothServer;
 
     public BluetoothServerCallback(BluetoothServer bluetoothServer) {
-        mBluetoothServer = bluetoothServer;
+        this.bluetoothServer = bluetoothServer;
     }
 
     /**
@@ -39,19 +39,20 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         Log.v(TAG, String.format("onConnectionStateChange() - device=%s status=%s state=%s",
                 device.getAddress(), status, newState));
 
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            Log.d(TAG, "Status success");
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            Log.d(TAG, "Status %s");
+            return;
+        }
 
-            if (newState == BluetoothGatt.STATE_CONNECTED) {
-                Log.d(TAG, "State connected");
-                for (GattServiceRequestHandler requestHandler : mBluetoothServer.gattRequestHandlerByServiceUuid.values()) {
-                    requestHandler.onDeviceConnected(device);
-                }
-            } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
-                Log.d(TAG, "State disconnected");
-                for (GattServiceRequestHandler requestHandler : mBluetoothServer.gattRequestHandlerByServiceUuid.values()) {
-                    requestHandler.onDeviceDisconnected(device);
-                }
+        if (newState == BluetoothGatt.STATE_CONNECTED) {
+            Log.d(TAG, "Status success. State connected");
+            for (GattServiceRequestHandler requestHandler : bluetoothServer.gattRequestHandlerByServiceUuid.values()) {
+                requestHandler.onDeviceConnected(device);
+            }
+        } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+            Log.d(TAG, "Status success. State disconnected");
+            for (GattServiceRequestHandler requestHandler : bluetoothServer.gattRequestHandlerByServiceUuid.values()) {
+                requestHandler.onDeviceDisconnected(device);
             }
         }
     }
@@ -65,7 +66,7 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
     public void onServiceAdded(int status, BluetoothGattService bluetoothGattService) {
         Log.v(TAG, String.format("onServiceAdded() - status=%d", status));
         try {
-            GattServiceRequestHandler requestHandler = mBluetoothServer.getGattServiceRequestHandler(bluetoothGattService);
+            GattServiceRequestHandler requestHandler = bluetoothServer.getGattServiceRequestHandler(bluetoothGattService);
             requestHandler.onServiceAdded(this);
         } catch (GattException e) {
             Log.e(TAG, String.format("onServiceAdded() failed with exception %s", e.getMessage()));
@@ -96,13 +97,13 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
                 characteristic.getUuid(),
                 Arrays.toString(characteristic.getValue())));
         try {
-            GattServiceRequestHandler requestHandler = mBluetoothServer.getGattServiceRequestHandler(characteristic);
+            GattServiceRequestHandler requestHandler = bluetoothServer.getGattServiceRequestHandler(characteristic);
             byte[] value = requestHandler.onCharacteristicRead(device, characteristic, offset);
 
-            mBluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+            bluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
         } catch (GattException e) {
             Log.e(TAG, String.format("onCharacteristicReadRequest() failed with exception %s", e.getMessage()));
-            mBluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
+            bluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
         }
     }
 
@@ -124,16 +125,16 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
                 Arrays.toString(characteristic.getValue()),
                 Arrays.toString(value)));
         try {
-            GattServiceRequestHandler requestHandler = mBluetoothServer.getGattServiceRequestHandler(characteristic);
+            GattServiceRequestHandler requestHandler = bluetoothServer.getGattServiceRequestHandler(characteristic);
             requestHandler.onCharacteristicWrite(device, characteristic, offset, value);
 
             if (responseNeeded) {
-                mBluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+                bluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
             }
         } catch (GattException e) {
             if (responseNeeded) {
                 Log.e(TAG, String.format("onCharacteristicWriteRequest() failed with exception %s", e.getMessage()));
-                mBluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
+                bluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
             }
         }
     }
@@ -153,13 +154,13 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
         Log.d(TAG, String.format("onDescriptorReadRequest() device=%s descriptor=%s",
                 device.getAddress(), descriptor.getUuid()));
         try {
-            GattServiceRequestHandler requestHandler = mBluetoothServer.getGattServiceRequestHandler(descriptor);
+            GattServiceRequestHandler requestHandler = bluetoothServer.getGattServiceRequestHandler(descriptor);
             byte[] value = requestHandler.onDescriptorRead(device, descriptor, offset);
 
-            mBluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+            bluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
         } catch (GattException e) {
             Log.e(TAG, String.format("onDescriptorReadRequest() failed with exception %s", e.getMessage()));
-            mBluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
+            bluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
         }
     }
 
@@ -178,16 +179,16 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
                 device.getAddress(), descriptor.getUuid(), Arrays.toString(value)));
 
         try {
-            GattServiceRequestHandler requestHandler = mBluetoothServer.getGattServiceRequestHandler(descriptor);
+            GattServiceRequestHandler requestHandler = bluetoothServer.getGattServiceRequestHandler(descriptor);
             requestHandler.onDescriptorWrite(device, descriptor, offset, value);
 
             if (responseNeeded) {
-                mBluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+                bluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
             }
         } catch (GattException e) {
             if (responseNeeded) {
                 Log.e(TAG, String.format("onDescriptorWriteRequest() failed with exception %s", e.getMessage()));
-                mBluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
+                bluetoothServer.sendErrorResponse(device, requestId, e.getStatus());
             }
         }
     }
@@ -211,7 +212,7 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
 
         Log.v(TAG, "Sending update to " + registeredDevices.size() + " subscribers");
         for (BluetoothDevice registeredDevice : registeredDevices) {
-            mBluetoothServer.notifyCharacteristicChanged(registeredDevice, characteristic);
+            bluetoothServer.notifyCharacteristicChanged(registeredDevice, characteristic);
         }
     }
 }
