@@ -183,7 +183,7 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
             requestHandler.onDescriptorWrite(device, descriptor, offset, value);
 
             if (responseNeeded) {
-                bluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+                bluetoothServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, 0, null);
             }
         } catch (GattException e) {
             if (responseNeeded) {
