@@ -1,12 +1,17 @@
 package com.google.heartrate.wearos.app;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.wearable.activity.WearableActivity;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.HeartRateServiceRequestHandler;
-import com.google.heartrate.wearos.app.gatt.GattException;
 import com.google.heartrate.wearos.app.gatt.heartrate.service.HeartRateGattService;
 import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
 import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
@@ -18,63 +23,70 @@ import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
  * <p>Used only for testing {@link BluetoothServer} with {@link HeartRateGattService} hosted.
  */
 public class MainActivity extends WearableActivity implements HeartRateValueSubscriber {
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     /** {@link TextView} to show current heart rate. */
     private TextView mTextView;
 
-    /** {@link BluetoothServer} for heart rate service hosting. */
-    private BluetoothServer bluetoothServer;
-
     /** Sensor listener to get heart rate. */
     private HeartRateSensorListener heartRateSensorListener;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            Log.d(TAG, "onServiceConnected()");
+
+            BluetoothServerService.BluetoothServerBinder serverBinder = (BluetoothServerService.BluetoothServerBinder) service;
+            BluetoothServer bluetoothServer = serverBinder.getService();
+
+            HeartRateServiceRequestHandler heartRateServiceRequestHandler
+                    = new HeartRateServiceRequestHandler(heartRateSensorListener);
+            bluetoothServer.registerGattServiceHandler(heartRateServiceRequestHandler);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            Log.d(TAG, "onServiceDisconnected()");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
+
         mTextView = findViewById(R.id.text);
 
-        startHeartRateServer();
-    }
-
-    /**
-     * Start server with heart rate service hosted.
-     */
-    private void startHeartRateServer() {
-        try {
-            heartRateSensorListener = new HeartRateSensorListener(this);
-            heartRateSensorListener.registerSubscriber(this);
-
-            bluetoothServer = new BluetoothServer(this);
-
-            HeartRateServiceRequestHandler heartRateServiceRequestHandler
-                    = new HeartRateServiceRequestHandler(heartRateSensorListener);
-            bluetoothServer.registerGattServiceHandler(heartRateServiceRequestHandler);
-
-            bluetoothServer.start();
-        } catch (GattException e) {
-            e.printStackTrace();
-        }
+        heartRateSensorListener = new HeartRateSensorListener(this);
+        startForegroundService(new Intent(this, BluetoothServerService.class));
     }
 
     @Override
-    protected void onResume() {
-        bluetoothServer.registerReceiver();
-        super.onResume();
+    protected void onStart() {
+        Log.d(TAG, "onStart()");
+
+        super.onStart();
+        heartRateSensorListener.registerSubscriber(this);
+        bindService(new Intent(this, BluetoothServerService.class), connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
-    protected void onPause() {
-        bluetoothServer.unregisterReceiver();
-        super.onPause();
+    protected void onStop() {
+        Log.d(TAG, "onStop()");
+
+        super.onStop();
+        heartRateSensorListener.unregisterSubscriber(this);
+        unbindService(connection);
     }
 
     @Override
     protected void onDestroy() {
-        bluetoothServer.stop();
-        heartRateSensorListener.unregisterSubscriber(this);
+        Log.d(TAG, "onDestroy()");
+
         super.onDestroy();
+        stopService(new Intent(this, BluetoothServerService.class));
     }
 
     @Override
