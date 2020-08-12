@@ -84,4 +84,9 @@ public class BluetoothAdvertiser {
 
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
     }
+
+    public void restartAdvertisingServices(Set<UUID> keySet) {
+        stopAdvertisingServices();
+        startAdvertisingServices(keySet);
+    }
 }
