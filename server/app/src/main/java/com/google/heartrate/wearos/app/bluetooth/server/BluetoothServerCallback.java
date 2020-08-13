@@ -32,7 +32,7 @@ public class BluetoothServerCallback extends BluetoothGattServerCallback {
     /**
      * {@link BluetoothGattServerCallback#onConnectionStateChange}
      *
-     * <p>Notify all request handlers in service about received devise connection state.
+     * <p>Notify all request handlers in service about received device connection state.
      */
     @Override
     public void onConnectionStateChange(BluetoothDevice device, final int status, int newState) {

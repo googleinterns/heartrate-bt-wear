@@ -153,7 +153,7 @@ public class BluetoothServer {
     }
 
     /**
-     * Register receiver which control {@link BluetoothAdvertiser} state.
+     * Register receiver which controls {@link BluetoothAdvertiser} state.
      */
     public void registerReceiver() {
         Log.d(TAG, "Register receiver");
@@ -172,7 +172,7 @@ public class BluetoothServer {
     /**
      * Send a response to a read or write request to a remote device.
      *
-     * <p>This function must be invoked in when a remote read/write request
+     * <p>This function must be invoked when a remote read/write request
      * is received by {@link BluetoothServerCallback} read/write methods.
      *
      * @param device remote device to send this response to
