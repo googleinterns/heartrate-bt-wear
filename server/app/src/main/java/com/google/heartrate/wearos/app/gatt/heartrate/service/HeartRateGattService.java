@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothGattService;
 
 import com.google.heartrate.wearos.app.gatt.attributes.GattCharacteristic;
 import com.google.heartrate.wearos.app.gatt.attributes.GattService;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.BodySensorLocationCharacteristic;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateControlPointCharacteristic;
 import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateMeasurementCharacteristic;
 
 import java.util.UUID;
@@ -37,9 +39,17 @@ public class HeartRateGattService extends GattService {
     private static final UUID HEART_RATE_SERVICE_UUID = UUID
             .fromString("0000180d-0000-1000-8000-00805f9b34fb");
 
-    /** Heart Rate characteristic. */
+    /** Heart Rate Measurement characteristic. */
     private static HeartRateMeasurementCharacteristic heartRateMeasurementCharacteristic =
             new HeartRateMeasurementCharacteristic();
+
+    /** Body Sensor Location characteristic. */
+    private static BodySensorLocationCharacteristic bodySensorLocationCharacteristic =
+            new BodySensorLocationCharacteristic();
+
+    /** Heart Rate Control Point characteristic. */
+    private static HeartRateControlPointCharacteristic heartRateControlPointCharacteristic =
+            new HeartRateControlPointCharacteristic();
 
     /**
      * Create {@link GattService} for Heart Rate service.
@@ -49,10 +59,21 @@ public class HeartRateGattService extends GattService {
     public HeartRateGattService() {
         super(HEART_RATE_SERVICE_UUID,
                 BluetoothGattService.SERVICE_TYPE_PRIMARY,
-                new GattCharacteristic[]{ heartRateMeasurementCharacteristic });
+                new GattCharacteristic[]{
+                        heartRateMeasurementCharacteristic,
+                        bodySensorLocationCharacteristic,
+                        heartRateControlPointCharacteristic});
     }
 
     public HeartRateMeasurementCharacteristic getHeartRateMeasurementCharacteristic() {
         return heartRateMeasurementCharacteristic;
+    }
+
+    public BodySensorLocationCharacteristic getBodySensorLocationCharacteristic() {
+        return bodySensorLocationCharacteristic;
+    }
+
+    public HeartRateControlPointCharacteristic getHeartRateControlPointCharacteristic() {
+        return heartRateControlPointCharacteristic;
     }
 }

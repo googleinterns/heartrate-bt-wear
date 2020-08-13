@@ -1,14 +1,18 @@
 package com.google.heartrate.wearos.app.bluetooth.server.handlers;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothDeviceStorage;
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServerCallback;
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.gatt.attributes.GattCharacteristic;
+import com.google.heartrate.wearos.app.gatt.attributes.GattDescriptor;
 import com.google.heartrate.wearos.app.gatt.attributes.GattService;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.BodySensorLocationCharacteristic;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateControlPointCharacteristic;
 import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateMeasurementCharacteristic;
 import com.google.heartrate.wearos.app.gatt.heartrate.service.HeartRateGattService;
 import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
@@ -72,6 +76,43 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     }
 
     /**
+     * Read {@link BodySensorLocationCharacteristic} value.
+     *
+     * @param device the remote device that has requested the read operation
+     * @param characteristic characteristic to be read
+     * @param offset offset into the value of the characteristic
+     * @throws GattException when requested not {@link BodySensorLocationCharacteristic} or cannot read it
+     */
+    @Override
+    public byte[] onCharacteristicRead(BluetoothDevice device, BluetoothGattCharacteristic characteristic, int offset) throws GattException {
+        GattCharacteristic bodySensorLocationCharacteristic = heartRateGattService
+                .getBodySensorLocationCharacteristic();
+        if (characteristic.getUuid() != bodySensorLocationCharacteristic.getUUid()) {
+            throw new GattException(String.format("Unsupported characteristic %s", characteristic.getUuid()));
+        }
+        return bodySensorLocationCharacteristic.read(offset);
+    }
+
+    /**
+     * Read {@link HeartRateControlPointCharacteristic} value.
+     *
+     * @param device the remote device that has requested the write operation
+     * @param characteristic characteristic to be write
+     * @param offset offset into the value of the characteristic
+     * @param value value the client wants to assign to the characteristic
+     * @throws GattException when requested not {@link HeartRateControlPointCharacteristic} or cannot read it
+     */
+    @Override
+    public void onCharacteristicWrite(BluetoothDevice device, BluetoothGattCharacteristic characteristic, int offset, byte[] value) throws GattException {
+        GattCharacteristic heartRateControlPointCharacteristic = heartRateGattService
+                .getHeartRateControlPointCharacteristic();
+        if (characteristic.getUuid() != heartRateControlPointCharacteristic.getUUid()) {
+            throw new GattException(String.format("Unsupported characteristic %s", characteristic.getUuid()));
+        }
+        heartRateControlPointCharacteristic.write(offset, value);
+    }
+
+    /**
      * Determine wether remote device is registered for notifications about Heart Rate Measurement characteristic change or not.
      *
      * <p>Read descriptor request for Heart Rate service is the way for remote device to check status of registration
@@ -84,7 +125,14 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      * {@link BluetoothGattDescriptor#DISABLE_NOTIFICATION_VALUE} otherwise
      */
     @Override
-    public byte[] onDescriptorRead(BluetoothDevice device, BluetoothGattDescriptor descriptor, int offset) {
+    public byte[] onDescriptorRead(BluetoothDevice device, BluetoothGattDescriptor descriptor, int offset) throws GattException {
+        GattDescriptor clientCharacteristicConfigurationDescriptor = heartRateGattService
+                .getHeartRateMeasurementCharacteristic()
+                .getClientCharacteristicConfigurationDescriptor();
+        if (descriptor.getUuid() != clientCharacteristicConfigurationDescriptor.getUUid()) {
+            throw new GattException(String.format("Unsupported descriptor %s", descriptor.getUuid()));
+        }
+
         if (registeredDeviceStorage.contains(device)) {
             return BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
         } else {
@@ -105,7 +153,14 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      * @param offset offset into the value of the descriptor
      */
     @Override
-    public void onDescriptorWrite(BluetoothDevice device, BluetoothGattDescriptor descriptor, int offset, byte[] value) {
+    public void onDescriptorWrite(BluetoothDevice device, BluetoothGattDescriptor descriptor, int offset, byte[] value) throws GattException {
+        GattDescriptor clientCharacteristicConfigurationDescriptor = heartRateGattService
+                .getHeartRateMeasurementCharacteristic()
+                .getClientCharacteristicConfigurationDescriptor();
+        if (descriptor.getUuid() != clientCharacteristicConfigurationDescriptor.getUUid()) {
+            throw new GattException(String.format("Unsupported descriptor %s", descriptor.getUuid()));
+        }
+
         if (Arrays.equals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE, value)) {
             Log.d(TAG, String.format("Subscribe device %s to notifications", device));
             registeredDeviceStorage.addDevice(device);
@@ -137,7 +192,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     }
 
     @Override
-    public BluetoothGattService getBluetoothGattService() {
-        return heartRateGattService.getBluetoothGattService();
+    public GattService getGattService() {
+        return heartRateGattService;
     }
 }

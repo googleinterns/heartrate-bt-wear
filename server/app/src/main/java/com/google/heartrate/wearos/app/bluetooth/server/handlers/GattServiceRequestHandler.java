@@ -4,12 +4,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServerCallback;
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.gatt.attributes.GattService;
 
 /**
  * Interface for bluetooth gatt service request handler.
@@ -114,8 +114,8 @@ public interface GattServiceRequestHandler {
     void onServiceRemoved();
 
     /**
-     * Get bluetooth gatt service for current handler.
-     * @return bluetooth gatt service for current handler
+     * Get gatt service for current handler.
+     * @return gatt service for current handler
      */
-    BluetoothGattService getBluetoothGattService();
+    GattService getGattService();
 }

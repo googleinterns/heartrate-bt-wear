@@ -1,8 +1,9 @@
-package com.google.heartrate.wearos.app.gatt.heartrate.characteristics;
+package com.google.heartrate.wearos.app.gatt.heartrate.characteristics.heartrate;
 
 import android.os.Build;
 
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateMeasurementCharacteristic;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;

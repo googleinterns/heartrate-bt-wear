@@ -10,6 +10,8 @@ import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.gatt.attributes.GattCharacteristic;
+import com.google.heartrate.wearos.app.gatt.attributes.GattDescriptor;
 
 import java.util.Arrays;
 import java.util.Set;

@@ -115,7 +115,7 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * @param requestHandler gatt service request handler to register
      */
     public void registerGattServiceHandler(GattServiceRequestHandler requestHandler) {
-        BluetoothGattService gattService = requestHandler.getBluetoothGattService();
+        BluetoothGattService gattService = requestHandler.getGattService().getBluetoothGattService();
         bluetoothGattServer.addService(gattService);
         gattRequestHandlerByServiceUuid.put(gattService.getUuid(), requestHandler);
 
@@ -129,7 +129,7 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * @param requestHandler gatt service request handler to unregister
      */
     public void unregisterGattServiceHandler(GattServiceRequestHandler requestHandler) {
-        BluetoothGattService gattService = requestHandler.getBluetoothGattService();
+        BluetoothGattService gattService = requestHandler.getGattService().getBluetoothGattService();
         bluetoothGattServer.removeService(gattService);
         gattRequestHandlerByServiceUuid.remove(gattService.getUuid());
     }

@@ -1,8 +1,11 @@
-package com.google.heartrate.wearos.app.gatt.heartrate.characteristics;
+package com.google.heartrate.wearos.app.gatt.heartrate.characteristics.heartrate;
 
 import android.os.Build;
 
 import com.google.heartrate.wearos.app.gatt.CharacteristicsArgumentProvider;
+import com.google.heartrate.wearos.app.gatt.GattException;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateMeasurementCharacteristic;
+import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.heartrate.HeartRateMeasurementCharacteristicTest;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -14,11 +17,10 @@ import org.robolectric.annotation.Config;
 import java.util.Collection;
 
 import static com.google.heartrate.wearos.app.gatt.CharacteristicsArgumentProvider.Range.IN_UINT16;
-import static com.google.heartrate.wearos.app.gatt.CharacteristicsArgumentProvider.Range.OUT_UINT16;
 
 @RunWith(ParameterizedRobolectricTestRunner.class)
 @Config(sdk = {Build.VERSION_CODES.O_MR1}, manifest = Config.NONE)
-public class SetHeartRateMeasurementValueOutOfRangeTest {
+public class SetHeartRateCharacteristicValueInRangeTest {
 
     /** Heart Rate Measurement Value to test. */
     @ParameterizedRobolectricTestRunner.Parameter(0)
@@ -32,9 +34,9 @@ public class SetHeartRateMeasurementValueOutOfRangeTest {
 
     @SuppressWarnings("rawtypes")
     @NotNull
-    @ParameterizedRobolectricTestRunner.Parameters(name = "HR out of UInt16 range: setHeartRateCharacteristicValues({0}, {1})")
-    public static Collection provideFirstOutOfUInt16RangeArguments() {
-        return CharacteristicsArgumentProvider.provideCollection(OUT_UINT16, IN_UINT16);
+    @ParameterizedRobolectricTestRunner.Parameters(name = "Both in UInt16 range: setHeartRateCharacteristicValues({0}, {1})")
+    public static Collection provideBothInUInt16RangeArguments() {
+        return CharacteristicsArgumentProvider.provideCollection(IN_UINT16, IN_UINT16);
     }
 
     @Before
@@ -43,8 +45,8 @@ public class SetHeartRateMeasurementValueOutOfRangeTest {
     }
 
     @Test
-    public void test() {
-        HeartRateMeasurementCharacteristicTest.assertSetValuesFailed(characteristic,
+    public void test() throws GattException {
+        HeartRateMeasurementCharacteristicTest.assertSetValuesSuccessful(characteristic,
                 heartRateMeasurementValue, expendedEnergyValue);
     }
 }

@@ -76,6 +76,10 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
     /** Offset at which Expended Energy value is Heart Rate Measurement value field is in a format of UINT16. */
     private static final int EXPENDED_ENERGY_SHIFTED_OFFSET = 3;
 
+
+    private static ClientCharacteristicConfigurationDescriptor clientCharacteristicConfigurationDescriptor =
+            new ClientCharacteristicConfigurationDescriptor();
+
     /**
      * Create {@link GattCharacteristic} for Heart Rate Measurement characteristic.
      * <br>Configure {@link GattCharacteristic} with Heart Rate Measurement characteristic UUID,
@@ -85,7 +89,11 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
         super(HEART_RATE_MEASUREMENT_UUID,
                 BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                 /* No permissions */ 0,
-                new GattDescriptor[] {new ClientCharacteristicConfigurationDescriptor()});
+                new GattDescriptor[] {clientCharacteristicConfigurationDescriptor});
+    }
+
+    public ClientCharacteristicConfigurationDescriptor getClientCharacteristicConfigurationDescriptor() {
+        return clientCharacteristicConfigurationDescriptor;
     }
 
     /**
@@ -256,7 +264,7 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
 
     /**
      * Determine whether the Energy Expended Field is present or not.
-     * If Energy Expended Status bit in Flags Field is 1, then is present, otherwise not.
+     * <p>If Energy Expended Status bit in Flags Field is 1, then is present, otherwise not.
      *
      * @return true is UInt16, false if UInt8
      */

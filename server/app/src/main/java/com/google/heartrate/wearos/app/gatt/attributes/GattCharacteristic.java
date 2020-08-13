@@ -1,6 +1,5 @@
 package com.google.heartrate.wearos.app.gatt.attributes;
 
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
@@ -83,12 +82,11 @@ public class GattCharacteristic implements GattAttribute {
      * Process default read characteristic request.
      * If special actions need to be done on read request, please override this method.
      *
-     * @param device device from which read request was received
      * @param offset value offset
      * @return current value of characteristic
      * @throws GattException if value can not be read
      */
-    public byte[] read(BluetoothDevice device, int offset) throws GattException {
+    public byte[] read(int offset) throws GattException {
         // TODO: implement getValue with offset, not required for now
         return getValue();
     }
@@ -97,11 +95,10 @@ public class GattCharacteristic implements GattAttribute {
      * Process default write characteristic request.
      * If special actions need to be done on write request, please override this method.
      *
-     * @param device device from which write request was received
      * @param offset value offset
      * @throws GattException if value can not be write
      */
-    public void write(BluetoothDevice device, int offset, byte[] value) throws GattException {
+    public void write(int offset, byte[] value) throws GattException {
         // TODO: implement setValue with offset, not required for now
         setValue(value);
     }
