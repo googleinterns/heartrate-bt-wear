@@ -15,6 +15,7 @@ import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.BluetoothUtils;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattServiceRequestHandler;
+import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattRequestHandlerRegistry;
 import com.google.heartrate.wearos.app.gatt.GattException;
 
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.UUID;
  * compatible with all service type, all specific request handling process must be implemented in
  * {@link GattServiceRequestHandler}.
  */
-public class BluetoothServer {
+public class BluetoothServer implements GattRequestHandlerRegistry {
     private static final String TAG = BluetoothServer.class.getSimpleName();
 
     /** Application context. */
@@ -107,6 +108,7 @@ public class BluetoothServer {
     }
 
     /**
+     * {@link GattRequestHandlerRegistry#registerGattServiceHandler}
      * Register given gatt service request handler in server.
      * Add handler's service to the {@link BluetoothGattServer} to be hosted.
      *
@@ -121,7 +123,7 @@ public class BluetoothServer {
     }
 
     /**
-     * Unregister given gatt service request handler from server.
+     * {@link GattRequestHandlerRegistry#unregisterGattServiceHandler}
      * Remove handler's service from the {@link BluetoothGattServer}.
      *
      * @param requestHandler gatt service request handler to unregister
@@ -185,7 +187,7 @@ public class BluetoothServer {
      * @param offset offset for partial read/write response
      * @param value value of the attribute that was read/written
      */
-    public void sendResponse(BluetoothDevice device, int requestId, int status, int offset, byte[] value) {
+    void sendResponse(BluetoothDevice device, int requestId, int status, int offset, byte[] value) {
         if (!bluetoothGattServer.sendResponse(device, requestId, status, offset, value)) {
             Log.e(TAG, String.format("Send response to device %s has failed!",
                     device.getAddress()));
@@ -202,7 +204,7 @@ public class BluetoothServer {
      * @param requestId id of the request that was received with the callback
      * @param status status of the request to be sent to the remote devices
      */
-    public void sendErrorResponse(BluetoothDevice device, int requestId, int status) {
+    void sendErrorResponse(BluetoothDevice device, int requestId, int status) {
         if (!bluetoothGattServer.sendResponse(device, requestId, status, 0, null)) {
             Log.e(TAG, String.format("Send error response to device %s has failed!",
                     device.getAddress()));
@@ -215,7 +217,7 @@ public class BluetoothServer {
      * @param device device to notify
      * @param characteristic changed characteristic
      */
-    public void notifyCharacteristicChanged(BluetoothDevice device, BluetoothGattCharacteristic characteristic) {
+    void notifyCharacteristicChanged(BluetoothDevice device, BluetoothGattCharacteristic characteristic) {
         if (!bluetoothGattServer.notifyCharacteristicChanged(device, characteristic, false)) {
             Log.e(TAG, String.format("Characteristic changed notification for device %s has failed!",
                     device.getAddress()));

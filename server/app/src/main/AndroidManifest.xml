@@ -48,7 +48,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".BluetoothServerService"
+            android:name=".BluetoothGattServerService"
             android:enabled="true" />
     </application>
 
