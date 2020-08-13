@@ -10,6 +10,7 @@ import com.google.heartrate.wearos.app.gatt.attributes.GattCharacteristic;
 import com.google.heartrate.wearos.app.gatt.attributes.GattDescriptor;
 import com.google.heartrate.wearos.app.gatt.heartrate.descriptors.ClientCharacteristicConfigurationDescriptor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -64,17 +65,34 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
     private static final byte EXPENDED_ENERGY_FLAG = 0b00001000;
 
 
+    /** Number of bytes in characteristic value byte array containing flags. */
+    private static final int FLAGS_SIZE = 1;
+
+    /** Number of bytes in characteristic value byte array containing heart rate measurement in UInt8 format. */
+    private static final int HEART_RATE_MEASUREMENT_UINT8_SIZE = 1;
+
+    /** Number of bytes in characteristic value byte array containing heart rate measurement in UInt16 format. */
+    private static final int HEART_RATE_MEASUREMENT_UINT16_SIZE = 2;
+
+    /** Number of bytes in characteristic value byte array containing expended energy in UInt16 format. */
+    private static final int EXPENDED_ENERGY_SIZE = 2;
+
+
     /** Offset at which the Heart Rate Measurement characteristic flags are stored. */
     private static final int FLAGS_OFFSET = 0;
 
     /** Offset at which Heart Rate Measurement value is stored. */
-    private static final int HEART_RATE_MEASUREMENT_OFFSET = 1;
+    private static final int HEART_RATE_MEASUREMENT_OFFSET =
+            FLAGS_OFFSET + FLAGS_SIZE;
 
     /** Offset at which Expended Energy value is Heart Rate Measurement value field is in a format of UINT8. */
-    private static final int EXPENDED_ENERGY_BASE_OFFSET = 2;
+    private static final int EXPENDED_ENERGY_BASE_OFFSET =
+            HEART_RATE_MEASUREMENT_OFFSET + HEART_RATE_MEASUREMENT_UINT8_SIZE;
 
     /** Offset at which Expended Energy value is Heart Rate Measurement value field is in a format of UINT16. */
-    private static final int EXPENDED_ENERGY_SHIFTED_OFFSET = 3;
+    private static final int EXPENDED_ENERGY_SHIFTED_OFFSET =
+            HEART_RATE_MEASUREMENT_OFFSET + HEART_RATE_MEASUREMENT_UINT16_SIZE;
+
 
     /**
      * Create {@link GattCharacteristic} for Heart Rate Measurement characteristic.
@@ -86,6 +104,16 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
                 BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                 /* No permissions */ 0,
                 new GattDescriptor[] {new ClientCharacteristicConfigurationDescriptor()});
+    }
+
+    /**
+     * Get first byte with flag from current characteristic value.
+     *
+     * @return flag byte
+     * @throws GattException if cannot get flags from value
+     */
+    public byte getFlags() throws GattException {
+        return (byte) getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, FLAGS_OFFSET);
     }
 
     /**
@@ -135,97 +163,106 @@ public class HeartRateMeasurementCharacteristic extends GattCharacteristic {
     }
 
     /**
+     * Set given flag info characteristic value byte array.
+     *
+     * @param flag flag to set
+     * @throws GattException if cannot set given flag
+     */
+    private void setFlag(byte flag) throws GattException {
+        setIntValue(getFlags() | flag, BluetoothGattCharacteristic.FORMAT_UINT8, FLAGS_OFFSET);
+    }
+
+    /**
+     * Set given heart rate measurement value info characteristic value byte array.
+     *
+     * @param heartRateMeasurement heart rate measurement value to set
+     * @throws GattException if cannot set given heart rate measurement value
+     */
+    private void setHeartRateMeasurementValue(int heartRateMeasurement) throws GattException {
+        int format;
+
+        if (FormatUtils.isInUInt8Range(heartRateMeasurement)) {
+            format = BluetoothGattCharacteristic.FORMAT_UINT8;
+
+            /* HR UInt8 format => Flags = 0b00000000 */
+            setFlag(HEART_RATE_MEASUREMENT_UINT8_FLAG);
+        } else {
+            format = BluetoothGattCharacteristic.FORMAT_UINT16;
+
+            /* HR UInt16 format => Flags = 0b00000001 */
+            setFlag(HEART_RATE_MEASUREMENT_UINT16_FLAG);
+        }
+
+        setIntValue(heartRateMeasurement, format, HEART_RATE_MEASUREMENT_OFFSET);
+    }
+
+    /**
+     * Set given expended energy value info characteristic value byte array.
+     *
+     * @param expendedEnergy expended energy value to set
+     * @throws GattException if cannot set given expended energy value
+     */
+    private void setExpandedEnergyValue(int expendedEnergy) throws GattException {
+        /* EE present => Flags = 0b0000100(0/1) */
+        setFlag(EXPENDED_ENERGY_FLAG);
+
+        int expendedEnergyOffset = isUInt16HeartRateFormat() ?
+                /* HR is in UInt16 format => EE offset is shifted */
+                EXPENDED_ENERGY_SHIFTED_OFFSET :
+                /* HR is in UInt8 format => EE offset is base */
+                EXPENDED_ENERGY_BASE_OFFSET;
+
+        setIntValue(expendedEnergy, BluetoothGattCharacteristic.FORMAT_UINT16, expendedEnergyOffset);
+    }
+
+    /**
      * Set given Heart Rate Measurement and Expended Energy values to the characteristic.
      *
      * @param heartRateMeasurement (bpm) heart rate measurement value in UInt8/UInt16 format
      * @param expendedEnergy       (kiloJoules) expended energy value in UInt16 format
      * @throws GattException in case of wrong arguments format or offset for heart rate characteristic values
      */
-    public void setHeartRateCharacteristicValue(int heartRateMeasurement, int expendedEnergy) throws GattException {
-        Log.i(TAG, String.format("Set the heart measurements value %d and expended energy value %d",
-                heartRateMeasurement, expendedEnergy));
+    public void setHeartRateCharacteristicValue(int heartRateMeasurement, Optional<Integer> expendedEnergy) throws GattException {
 
+        /* assert that given values are in right bounds. */
         FormatUtils.assertIsUInt16(heartRateMeasurement);
-        FormatUtils.assertIsUInt16(expendedEnergy);
+        if (expendedEnergy.isPresent()) {
+            FormatUtils.assertIsUInt16(expendedEnergy.get());
+        }
 
-        if (FormatUtils.isInUInt8Range(heartRateMeasurement)) {
+        int valueSize = calculateValueSize(heartRateMeasurement, expendedEnergy);
+        setValue(new byte[valueSize]);
 
-            /* Flags(UInt8) + HR(UInt8) + EE(UInt16) */
-            setValue(new byte[4]);
+        setHeartRateMeasurementValue(heartRateMeasurement);
 
-            /* EE present and HR UInt8 format => Flags = 0b00001000 */
-            setIntValue((byte) (HEART_RATE_MEASUREMENT_UINT8_FLAG | EXPENDED_ENERGY_FLAG),
-                    BluetoothGattCharacteristic.FORMAT_UINT8,
-                    FLAGS_OFFSET);
-
-            setIntValue(heartRateMeasurement,
-                    BluetoothGattCharacteristic.FORMAT_UINT8,
-                    HEART_RATE_MEASUREMENT_OFFSET);
-
-            /* HR is in UInt8 format => EE offset is base */
-            setIntValue(expendedEnergy,
-                    BluetoothGattCharacteristic.FORMAT_UINT16,
-                    EXPENDED_ENERGY_BASE_OFFSET);
-        } else {
-
-            /* Flags(UInt8) + HR(UInt16) + EE(UInt16) */
-            setValue(new byte[5]);
-
-            /* EE present and HR UInt16 format => Flags = 0b00001001 */
-            setIntValue((byte) (HEART_RATE_MEASUREMENT_UINT16_FLAG | EXPENDED_ENERGY_FLAG),
-                    BluetoothGattCharacteristic.FORMAT_UINT8,
-                    FLAGS_OFFSET);
-
-            setIntValue(heartRateMeasurement,
-                    BluetoothGattCharacteristic.FORMAT_UINT16,
-                    HEART_RATE_MEASUREMENT_OFFSET);
-
-            /* HR is in UInt16 format => EE offset is shifted */
-            setIntValue(expendedEnergy,
-                    BluetoothGattCharacteristic.FORMAT_UINT16,
-                    EXPENDED_ENERGY_SHIFTED_OFFSET);
+        if (expendedEnergy.isPresent()) {
+            setExpandedEnergyValue(expendedEnergy.get());
         }
     }
 
     /**
-     * Set given Heart Rate Measurement value to the characteristic.
+     * Calculate size of byte array for characteristic value according to
+     * given heart rate measurement and expanded energy values.
      *
-     * @param heartRateMeasurement (bpm) heart rate measurement value in UInt8/UInt16 format
-     * @throws GattException in case of wrong arguments format or offset for heart rate characteristic values
+     * @param heartRateMeasurement heart rate measurement value
+     * @param optionalExpendedEnergy expanded energy value if present
+     * @return size of byte array for characteristic value
      */
-    public void setHeartRateCharacteristicValue(int heartRateMeasurement) throws GattException {
-        Log.i(TAG, String.format("Set the heart measurements value %d", heartRateMeasurement));
+    private int calculateValueSize(int heartRateMeasurement, Optional<Integer> optionalExpendedEnergy) {
+        /* one byte for flags */
+        int size = FLAGS_SIZE;
 
-        FormatUtils.assertIsUInt16(heartRateMeasurement);
+        /* one byte for HR if UInt8, two bytes if UInt16 */
+        size += FormatUtils.isInUInt8Range(heartRateMeasurement) ?
+                HEART_RATE_MEASUREMENT_UINT8_SIZE :
+                HEART_RATE_MEASUREMENT_UINT16_SIZE;
 
-        if (FormatUtils.isInUInt8Range(heartRateMeasurement)) {
+        /* two bytes for EE if present */
+        size += optionalExpendedEnergy.isPresent() ?
+                EXPENDED_ENERGY_SIZE :
+                0;
 
-            /* Flags(UInt8) + HR(UInt8) */
-            setValue(new byte[2]);
-
-            /* EE not present and HR UInt8 format => Flags = 0b00000000 */
-            setIntValue(HEART_RATE_MEASUREMENT_UINT8_FLAG,
-                    BluetoothGattCharacteristic.FORMAT_UINT8,
-                    FLAGS_OFFSET);
-
-            setIntValue(heartRateMeasurement,
-                    BluetoothGattCharacteristic.FORMAT_UINT8,
-                    HEART_RATE_MEASUREMENT_OFFSET);
-
-        } else {
-
-            /* Flags(UInt8) + HR(UInt16) */
-            setValue(new byte[3]);
-
-            /* EE not present and HR UInt16 format => Flags = 0b00000001 */
-            setIntValue(HEART_RATE_MEASUREMENT_UINT16_FLAG,
-                    BluetoothGattCharacteristic.FORMAT_UINT8,
-                    FLAGS_OFFSET);
-
-            setIntValue(heartRateMeasurement,
-                    BluetoothGattCharacteristic.FORMAT_UINT16,
-                    HEART_RATE_MEASUREMENT_OFFSET);
-        }
+        return size;
     }
 
     /**

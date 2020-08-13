@@ -11,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -36,7 +38,7 @@ public class HeartRateMeasurementCharacteristicTest {
      */
     public static void assertSetValuesSuccessful(@NotNull HeartRateMeasurementCharacteristic characteristic,
                                                  int heartRateValue, int expendedEnergyValue) throws GattException {
-        characteristic.setHeartRateCharacteristicValue(heartRateValue, expendedEnergyValue);
+        characteristic.setHeartRateCharacteristicValue(heartRateValue, Optional.of(expendedEnergyValue));
         int currentHeartRateMeasurementValue = characteristic.getHeartRateMeasurementValue();
         int currentExpendedEnergyValue = characteristic.getExpendedEnergyValue();
 
@@ -54,7 +56,7 @@ public class HeartRateMeasurementCharacteristicTest {
     public static void assertSetValuesFailed(HeartRateMeasurementCharacteristic characteristic,
                                              int heartRateValue, int expendedEnergyValue) {
         assertThrows(GattException.class, () -> characteristic
-                .setHeartRateCharacteristicValue(heartRateValue, expendedEnergyValue));
+                .setHeartRateCharacteristicValue(heartRateValue, Optional.of(expendedEnergyValue)));
     }
 
     /**
@@ -132,11 +134,11 @@ public class HeartRateMeasurementCharacteristicTest {
     @Test
     public void getExpendedEnergyWhenNotPresentTest() throws GattException {
         int heartRateUInt16Value = 1 << 8 + 5;
-        characteristic.setHeartRateCharacteristicValue(heartRateUInt16Value);
+        characteristic.setHeartRateCharacteristicValue(heartRateUInt16Value, Optional.empty());
         assertThrows(GattException.class, () -> characteristic.getExpendedEnergyValue());
 
         int heartRateUInt8Value = 1 << 8 - 5;
-        characteristic.setHeartRateCharacteristicValue(heartRateUInt8Value);
+        characteristic.setHeartRateCharacteristicValue(heartRateUInt8Value, Optional.empty());
         assertThrows(GattException.class, () -> characteristic.getExpendedEnergyValue());
     }
 }
