@@ -11,6 +11,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
+import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattRequestHandlerRegistry;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.HeartRateServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.heartrate.service.HeartRateGattService;
 import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
@@ -31,18 +32,17 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
     /** Sensor listener to get heart rate. */
     private HeartRateSensorListener heartRateSensorListener;
 
+    /** {@link ServiceConnection} with {@link BluetoothGattServerService}. */
     private ServiceConnection connection = new ServiceConnection() {
         @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            Log.d(TAG, "onServiceConnected()");
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            BluetoothGattServerService.BluetoothServerBinder serverBinder = (BluetoothGattServerService.BluetoothServerBinder) service;
+            GattRequestHandlerRegistry gattRequestHandlerRegistry = serverBinder.getService();
 
-            BluetoothServerService.BluetoothServerBinder serverBinder = (BluetoothServerService.BluetoothServerBinder) service;
-            BluetoothServer bluetoothServer = serverBinder.getService();
-
+            /* register heart rate service in bluetooth server */
             HeartRateServiceRequestHandler heartRateServiceRequestHandler
                     = new HeartRateServiceRequestHandler(heartRateSensorListener);
-            bluetoothServer.registerGattServiceHandler(heartRateServiceRequestHandler);
+            gattRequestHandlerRegistry.registerGattServiceHandler(heartRateServiceRequestHandler);
         }
 
         @Override
@@ -60,33 +60,30 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         mTextView = findViewById(R.id.text);
 
         heartRateSensorListener = new HeartRateSensorListener(this);
-        startForegroundService(new Intent(this, BluetoothServerService.class));
+        startForegroundService(new Intent(this, BluetoothGattServerService.class));
     }
 
     @Override
     protected void onStart() {
-        Log.d(TAG, "onStart()");
-
         super.onStart();
+
         heartRateSensorListener.registerSubscriber(this);
-        bindService(new Intent(this, BluetoothServerService.class), connection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, BluetoothGattServerService.class), connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
-        Log.d(TAG, "onStop()");
-
         super.onStop();
+
         heartRateSensorListener.unregisterSubscriber(this);
         unbindService(connection);
     }
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy()");
-
         super.onDestroy();
-        stopService(new Intent(this, BluetoothServerService.class));
+
+        stopService(new Intent(this, BluetoothGattServerService.class));
     }
 
     @Override
