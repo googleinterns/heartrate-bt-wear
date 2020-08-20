@@ -5,11 +5,21 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "com.android.tools.build:gradle:4.0.0"
+        classpath "com.android.tools.build:gradle:4.0.1"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+}
+
+plugins {
+    id("net.ltgt.errorprone") version "1.1.0"
+}
+
+dependencies {
+    errorprone("com.google.errorprone:error_prone_core:2.3.2")
+    errorproneJavac "com.google.errorprone:javac:9+181-r4173-1"
+    errorprone "org.robolectric:errorprone:4.3"
 }
 
 allprojects {
@@ -17,8 +27,27 @@ allprojects {
         google()
         jcenter()
     }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint" << "-Xlint:-serial" << "-Xlint:unchecked" << "-Xlint:deprecation"
+        }
+    }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+afterEvaluate {
+    tasks.withType(JavaCompile).configureEach {
+        def classesWithScope = [
+                "com.bluelinelabs.conductor.Controller"
+        ]
+        options.errorprone {
+            check("AutoDispose", CheckSeverity.ERROR)
+            option("AutoDispose:TypesWithScope", classesWithScope.join(","))
+            option("AutoDispose:Lenient", "true")
+        }
+    }
 }
