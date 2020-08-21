@@ -16,6 +16,7 @@ import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
 import com.google.heartrate.wearos.app.sensors.SensorException;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * {@link GattServiceRequestHandler} for Heart Rate service.
@@ -57,7 +58,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
                 HeartRateMeasurementCharacteristic characteristic = heartRateGattService.getHeartRateMeasurementCharacteristic();
 
                 try {
-                    characteristic.setHeartRateCharacteristicValue(heartRateSensorListener.getCurrentHeartRateValue());
+                    characteristic.setHeartRateCharacteristicValue(heartRateSensorListener.getCurrentHeartRateValue(), Optional.empty());
                 } catch (SensorException e) {
                     Log.e(TAG, String.format("Can not get value from sensor: %s", e.getMessage()));
                 }
