@@ -116,10 +116,12 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      */
     public void registerGattServiceHandler(GattServiceRequestHandler requestHandler) {
         BluetoothGattService gattService = requestHandler.getBluetoothGattService();
-        bluetoothGattServer.addService(gattService);
-        gattRequestHandlerByServiceUuid.put(gattService.getUuid(), requestHandler);
+        if (!gattRequestHandlerByServiceUuid.containsKey(gattService.getUuid())) {
+            bluetoothGattServer.addService(gattService);
+            gattRequestHandlerByServiceUuid.put(gattService.getUuid(), requestHandler);
 
-        bluetoothAdvertiser.restartAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
+            bluetoothAdvertiser.restartAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
+        }
     }
 
     /**
@@ -130,8 +132,12 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      */
     public void unregisterGattServiceHandler(GattServiceRequestHandler requestHandler) {
         BluetoothGattService gattService = requestHandler.getBluetoothGattService();
-        bluetoothGattServer.removeService(gattService);
-        gattRequestHandlerByServiceUuid.remove(gattService.getUuid());
+        if (gattRequestHandlerByServiceUuid.containsKey(gattService.getUuid())) {
+            bluetoothGattServer.removeService(gattService);
+            gattRequestHandlerByServiceUuid.remove(gattService.getUuid());
+
+            bluetoothAdvertiser.restartAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
+        }
     }
 
     /**

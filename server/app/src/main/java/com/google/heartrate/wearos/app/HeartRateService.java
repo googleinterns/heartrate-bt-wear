@@ -14,17 +14,17 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
-import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattServiceRequestHandler;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattRequestHandlerRegistry;
+import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.GattException;
 
 /**
- * {@link BluetoothGattServerService} is foreground service to run {@link BluetoothServer} in.
- * It starts {@link BluetoothGattServerService} and provides binder
+ * {@link HeartRateService} is foreground service to run {@link BluetoothServer} in.
+ * It starts {@link HeartRateService} and provides binder
  * to add/remove {@link GattServiceRequestHandler} into {@link BluetoothServer}.
  */
-public class BluetoothGattServerService extends Service {
-    private static final String TAG = BluetoothGattServerService.class.getSimpleName();
+public class HeartRateService extends Service {
+    private static final String TAG = HeartRateService.class.getSimpleName();
     private static final String CHANNEL_ID = String.format("%sChannelId", TAG);
     private static final String CHANNEL_NAME = String.format("%sChannelName", TAG);
 
@@ -47,7 +47,7 @@ public class BluetoothGattServerService extends Service {
     }
 
     /**
-     * Create notification chanel for foreground {@link BluetoothGattServerService} service.
+     * Create notification chanel for foreground {@link HeartRateService} service.
      */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
