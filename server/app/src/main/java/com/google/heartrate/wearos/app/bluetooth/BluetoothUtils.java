@@ -18,6 +18,8 @@ import static android.content.Context.BLUETOOTH_SERVICE;
 public class BluetoothUtils {
     private static final String TAG = BluetoothUtils.class.getSimpleName();
 
+    private BluetoothUtils() {}
+
     /**
      * Assert that bluetooth is supported in current device.
      *
