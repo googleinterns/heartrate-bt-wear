@@ -17,17 +17,17 @@ public class HeartRateSensorListener implements SensorEventListener {
     private static final String TAG = HeartRateSensorListener.class.getSimpleName();
 
     /** Sensor manager. */
-    private final SensorManager mSensorManager;
+    private final SensorManager sensorManager;
 
     /** Heart rate sensor to listen to. */
-    private final Sensor mHeartRateSensor;
+    private final Sensor heartRateSensor;
 
     /** Subscriber for heart rate value updates. */
     private List<HeartRateValueSubscriber> subscribers = new ArrayList<>();
 
     public HeartRateSensorListener(Context context) {
-        mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-        mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
     }
 
     /**
@@ -59,7 +59,7 @@ public class HeartRateSensorListener implements SensorEventListener {
      */
     private void startMeasure() {
         Log.d(TAG, "Start measurement");
-        boolean sensorRegistered = mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        boolean sensorRegistered = sensorManager.registerListener(this, heartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
         if (!sensorRegistered) {
             Log.e(TAG, "Heart rate sensor not registered");
         } else {
@@ -73,7 +73,7 @@ public class HeartRateSensorListener implements SensorEventListener {
      */
     private void stopMeasure() {
         Log.d(TAG, "Stop measurement");
-        mSensorManager.unregisterListener(this);
+        sensorManager.unregisterListener(this);
     }
 
     /**
