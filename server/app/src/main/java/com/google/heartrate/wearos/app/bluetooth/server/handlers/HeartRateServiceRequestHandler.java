@@ -15,6 +15,7 @@ import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
 import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * {@link GattServiceRequestHandler} for Heart Rate service.
