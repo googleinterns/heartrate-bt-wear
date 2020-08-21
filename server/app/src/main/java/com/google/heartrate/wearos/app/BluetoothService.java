@@ -19,12 +19,12 @@ import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattServiceRequ
 import com.google.heartrate.wearos.app.gatt.GattException;
 
 /**
- * {@link HeartRateService} is foreground service to run {@link BluetoothServer} in.
- * It starts {@link HeartRateService} and provides binder
+ * {@link BluetoothService} is foreground service to run {@link BluetoothServer} in.
+ * It starts {@link BluetoothService} and provides binder
  * to add/remove {@link GattServiceRequestHandler} into {@link BluetoothServer}.
  */
-public class HeartRateService extends Service {
-    private static final String TAG = HeartRateService.class.getSimpleName();
+public class BluetoothService extends Service {
+    private static final String TAG = BluetoothService.class.getSimpleName();
     private static final String CHANNEL_ID = String.format("%sChannelId", TAG);
     private static final String CHANNEL_NAME = String.format("%sChannelName", TAG);
 
@@ -47,7 +47,7 @@ public class HeartRateService extends Service {
     }
 
     /**
-     * Create notification chanel for foreground {@link HeartRateService} service.
+     * Create notification chanel for foreground {@link BluetoothService} service.
      */
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -35,11 +35,11 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
     /** {@link HeartRateServiceRequestHandler} to register to {@link GattRequestHandlerRegistry}. */
     private HeartRateServiceRequestHandler heartRateServiceRequestHandler;
 
-    /** {@link ServiceConnection} with {@link HeartRateService}. */
+    /** {@link ServiceConnection} with {@link BluetoothService}. */
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            HeartRateService.BluetoothServerBinder serverBinder = (HeartRateService.BluetoothServerBinder) service;
+            BluetoothService.BluetoothServerBinder serverBinder = (BluetoothService.BluetoothServerBinder) service;
             serverBinder.getService().registerGattServiceHandler(heartRateServiceRequestHandler);
         }
 
@@ -58,7 +58,7 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
             heartRateSensorListener.startMeasure();
             heartRateServiceRequestHandler = new HeartRateServiceRequestHandler(heartRateSensorListener);
 
-            startForegroundService(new Intent(this, HeartRateService.class));
+            startForegroundService(new Intent(this, BluetoothService.class));
         } catch (SensorException e) {
             e.printStackTrace();
         }
@@ -69,7 +69,7 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         super.onStart();
 
         heartRateSensorListener.registerSubscriber(this);
-        bindService(new Intent(this, HeartRateService.class), connection, Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, BluetoothService.class), connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         super.onDestroy();
 
         unbindService(connection);
-        stopService(new Intent(this, HeartRateService.class));
+        stopService(new Intent(this, BluetoothService.class));
         heartRateSensorListener.stopMeasure();
     }
 
