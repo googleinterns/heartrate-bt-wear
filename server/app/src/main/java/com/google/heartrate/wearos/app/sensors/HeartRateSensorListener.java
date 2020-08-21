@@ -16,6 +16,9 @@ import java.util.List;
 public class HeartRateSensorListener implements SensorEventListener {
     private static final String TAG = HeartRateSensorListener.class.getSimpleName();
 
+    /** Heart rate sensor data when sensor is not available or started. */
+    private static final int NO_VALUE_AVAILABLE = 0;
+
     /** Sensor manager. */
     private final SensorManager mSensorManager;
 
@@ -24,6 +27,9 @@ public class HeartRateSensorListener implements SensorEventListener {
 
     /** Subscriber for heart rate value updates. */
     private List<HeartRateValueSubscriber> subscribers = new ArrayList<>();
+
+    /** Heart rate value from last sensor update. */
+    private int currentHeartRateValue = NO_VALUE_AVAILABLE;
 
     public HeartRateSensorListener(Context context) {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -36,9 +42,6 @@ public class HeartRateSensorListener implements SensorEventListener {
      */
     public void registerSubscriber(HeartRateValueSubscriber subscriber) {
         Log.d(TAG, "Register subscriber");
-        if (subscribers.size() == 0) {
-            startMeasure();
-        }
         subscribers.add(subscriber);
     }
 
@@ -49,29 +52,28 @@ public class HeartRateSensorListener implements SensorEventListener {
     public void unregisterSubscriber(HeartRateValueSubscriber subscriber) {
         Log.d(TAG, "Unregister subscriber");
         subscribers.remove(subscriber);
-        if (subscribers.size() == 0) {
-            stopMeasure();
-        }
     }
 
     /**
      * Start measurement heart rate data. Register to heart rate sensor changes.
+     *
+     * @throws SensorException when cannot start measurement
      */
-    private void startMeasure() {
+    public void startMeasure() throws SensorException {
         Log.d(TAG, "Start measurement");
-        boolean sensorRegistered = mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        boolean sensorRegistered = mSensorManager
+                .registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_NORMAL, 0);
         if (!sensorRegistered) {
-            Log.e(TAG, "Heart rate sensor not registered");
+            throw new SensorException("Heart rate sensor not registered");
         } else {
             Log.d(TAG, "Heart rate sensor registered");
         }
-
     }
 
     /**
      * Stop measurement heart rate data. Unregister from heart rate sensor changes.
      */
-    private void stopMeasure() {
+    public void stopMeasure() {
         Log.d(TAG, "Stop measurement");
         mSensorManager.unregisterListener(this);
     }
@@ -84,11 +86,19 @@ public class HeartRateSensorListener implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         float heartRateFloat = event.values[0];
         int heartRate = Math.round(heartRateFloat);
-        Log.v(TAG, String.format("onSensorChanged() - value=%d", heartRate));
+        Log.d(TAG, String.format("onSensorChanged() - value=%d", heartRate));
 
+        currentHeartRateValue = heartRate;
         for (HeartRateValueSubscriber listener : subscribers) {
             listener.onHeartRateValueChanged(heartRate);
         }
+    }
+
+    public int getCurrentHeartRateValue() throws SensorException {
+        if (currentHeartRateValue == NO_VALUE_AVAILABLE) {
+            throw new SensorException("No data available in heart rate sensor");
+        }
+        return currentHeartRateValue;
     }
 
     @Override

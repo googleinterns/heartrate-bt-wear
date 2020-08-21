@@ -7,12 +7,13 @@ import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothDeviceStorage;
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServerCallback;
+import com.google.heartrate.wearos.app.bluetooth.server.notifiers.GattScheduler;
 import com.google.heartrate.wearos.app.gatt.GattException;
 import com.google.heartrate.wearos.app.gatt.attributes.GattService;
 import com.google.heartrate.wearos.app.gatt.heartrate.characteristics.HeartRateMeasurementCharacteristic;
 import com.google.heartrate.wearos.app.gatt.heartrate.service.HeartRateGattService;
 import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
-import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
+import com.google.heartrate.wearos.app.sensors.SensorException;
 
 import java.util.Arrays;
 
@@ -21,20 +22,20 @@ import java.util.Arrays;
  *
  * <p>Provides methods to handle request from remote devices to Heart Rate service.
  */
-public class HeartRateServiceRequestHandler implements GattServiceRequestHandler, HeartRateValueSubscriber {
+public class HeartRateServiceRequestHandler implements GattServiceRequestHandler {
     private static final String TAG = HeartRateServiceRequestHandler.class.getSimpleName();
 
     /** {@link GattService} for Heart Rate service. */
     private final HeartRateGattService heartRateGattService;
 
-    /** Sensor listener for heart rate sensor. */
-    private final HeartRateSensorListener heartRateSensorListener;
-
-    /** {@link BluetoothServerCallback} to interact with remote device. */
-    private BluetoothServerCallback bluetoothServerCallback;
+    /** Notifier for {@link HeartRateMeasurementCharacteristic} changes. */
+    private GattScheduler heartRateCharacteristicChangeNotifier;
 
     /** Storage for all {@link BluetoothDevice} registered to Heart Rate Measurement characteristic. */
     private BluetoothDeviceStorage registeredDeviceStorage;
+
+    /** Heart Rate sensor to get Heart Rate Measurement value from. */
+    private HeartRateSensorListener heartRateSensorListener;
 
     public HeartRateServiceRequestHandler(HeartRateSensorListener heartRateSensorListener) {
         this.heartRateSensorListener = heartRateSensorListener;
@@ -48,8 +49,25 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public void onServiceAdded(BluetoothServerCallback bluetoothServerCallback) {
-        this.bluetoothServerCallback = bluetoothServerCallback;
-        heartRateSensorListener.registerSubscriber(this);
+
+        heartRateCharacteristicChangeNotifier = new GattScheduler() {
+
+            @Override
+            public void runScheduled() throws GattException {
+                HeartRateMeasurementCharacteristic characteristic = heartRateGattService.getHeartRateMeasurementCharacteristic();
+
+                try {
+                    characteristic.setHeartRateCharacteristicValue(heartRateSensorListener.getCurrentHeartRateValue());
+                } catch (SensorException e) {
+                    Log.e(TAG, String.format("Can not get value from sensor: %s", e.getMessage()));
+                }
+
+                bluetoothServerCallback.onCharacteristicChanged(
+                        characteristic.getBluetoothGattCharacteristic(),
+                        registeredDeviceStorage.getAllDevices());
+            }
+        };
+        heartRateCharacteristicChangeNotifier.start();
     }
 
     /**
@@ -58,8 +76,10 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public void onServiceRemoved() {
-        heartRateSensorListener.unregisterSubscriber(this);
         registeredDeviceStorage.removeAllDevices();
+        if (heartRateCharacteristicChangeNotifier != null) {
+            heartRateCharacteristicChangeNotifier.stop();
+        }
     }
 
     /**
@@ -112,27 +132,6 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
         } else if (Arrays.equals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE, value)) {
             Log.d(TAG, String.format("Unsubscribe device %s from notifications", device));
             registeredDeviceStorage.removeDevice(device);
-        }
-    }
-
-    /**
-     * Callback to listen to {@link HeartRateSensorListener} about heart rate value change.
-     * <p>Update Heart Rate measurement characteristic value with given and send notification about
-     * Heart Rate measurement characteristic change to server via {@link BluetoothServerCallback}
-     * @param value new heart rate value
-     */
-    @Override
-    public void onHeartRateValueChanged(int value) {
-        try {
-            HeartRateMeasurementCharacteristic heartRateMeasurementCharacteristic
-                = heartRateGattService.getHeartRateMeasurementCharacteristic();
-            heartRateMeasurementCharacteristic.setHeartRateCharacteristicValue(value);
-
-            bluetoothServerCallback.onCharacteristicChanged(heartRateMeasurementCharacteristic.getBluetoothGattCharacteristic(),
-                    registeredDeviceStorage.getAllDevices());
-
-        } catch (GattException e) {
-            e.printStackTrace();
         }
     }
 
