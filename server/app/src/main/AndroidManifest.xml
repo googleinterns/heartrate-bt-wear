@@ -48,7 +48,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".HeartRateService"
+            android:name=".BluetoothService"
             android:enabled="true" />
     </application>
 
