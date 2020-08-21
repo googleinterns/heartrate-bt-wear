@@ -32,7 +32,10 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /* Not to fall into doze and suspend mode */
         setAmbientEnabled();
+
         mTextView = findViewById(R.id.text);
 
         startHeartRateServer();
