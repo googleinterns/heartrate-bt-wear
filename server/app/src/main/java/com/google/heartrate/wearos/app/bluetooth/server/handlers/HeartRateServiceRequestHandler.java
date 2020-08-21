@@ -117,7 +117,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     }
 
     /**
-     * Callback to listen to {@link HeartRateSensorListener} about heart rate value change.
+     * Called when the heart rate value was changed.
      * <p>Update Heart Rate measurement characteristic value with given and send notification about
      * Heart Rate measurement characteristic change to server via {@link BluetoothServerCallback}
      * @param value new heart rate value
