@@ -127,7 +127,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
         try {
             HeartRateMeasurementCharacteristic heartRateMeasurementCharacteristic
                 = heartRateGattService.getHeartRateMeasurementCharacteristic();
-            heartRateMeasurementCharacteristic.setHeartRateCharacteristicValue(value);
+            heartRateMeasurementCharacteristic.setHeartRateCharacteristicValue(value, Optional.empty());
 
             bluetoothServerCallback.onCharacteristicChanged(heartRateMeasurementCharacteristic.getBluetoothGattCharacteristic(),
                     registeredDeviceStorage.getAllDevices());
