@@ -27,6 +27,7 @@ import com.google.heartrate.wearos.app.sensors.SensorException;
 public class MainActivity extends WearableActivity implements HeartRateValueSubscriber {
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    /** WakeLock to prevent sensor go to suspend mode. */
     private PowerManager.WakeLock wakeLock;
 
     /** {@link TextView} to show current heart rate. */

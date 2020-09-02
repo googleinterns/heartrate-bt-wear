@@ -41,7 +41,7 @@ public class GattService implements GattAttribute {
         this(uuid, type);
 
         for (GattCharacteristic gattCharacteristic : gattCharacteristics) {
-            characteristicByUuid.put(gattCharacteristic.getUUid(), gattCharacteristic);
+            characteristicByUuid.put(gattCharacteristic.getUuid(), gattCharacteristic);
             bluetoothGattService.addCharacteristic(gattCharacteristic.getBluetoothGattCharacteristic());
         }
     }
@@ -67,7 +67,7 @@ public class GattService implements GattAttribute {
         GattCharacteristic characteristic = characteristicByUuid.get(characteristicUuid);
         if (characteristic == null) {
             throw new GattException(String.format("Service %s does not have characteristic %s",
-                    getUUid(), characteristicUuid));
+                    getUuid(), characteristicUuid));
         }
         return characteristic;
     }
@@ -82,7 +82,7 @@ public class GattService implements GattAttribute {
     }
 
     @Override
-    public UUID getUUid() {
+    public UUID getUuid() {
         return bluetoothGattService.getUuid();
     }
 }

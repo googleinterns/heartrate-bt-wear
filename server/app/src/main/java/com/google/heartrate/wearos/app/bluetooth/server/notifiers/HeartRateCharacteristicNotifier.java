@@ -27,7 +27,7 @@ public class HeartRateCharacteristicNotifier {
     private static final long NOTIFY_FIRST_WAIT_PERIOD_MS = 1000;
 
     /** Period between successive notifications. */
-    private static final long NOTIFY_WAIT_PERIOD_MS = 1000;
+    private static final long NOTIFY_WAIT_PERIOD_MS = 30 * 1000;
 
     /** Instance of {@link ScheduledExecutorService} for notification scheduling. */
     private ScheduledExecutorService notificationExecutor = Executors.newSingleThreadScheduledExecutor();

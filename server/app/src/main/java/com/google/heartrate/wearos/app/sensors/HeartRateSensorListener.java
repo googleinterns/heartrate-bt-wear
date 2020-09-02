@@ -80,6 +80,7 @@ public class HeartRateSensorListener implements SensorEventListener {
 
     /**
      * Callback invokes when heart rate value has been changed.
+     *
      * @param event event from heart rate sensor
      */
     @Override
@@ -94,6 +95,12 @@ public class HeartRateSensorListener implements SensorEventListener {
         }
     }
 
+    /**
+     * Get last heart rate value got from sensor.
+     *
+     * @return last heart rate value got from sensor
+     * @throws SensorException if cannot get last heart rate value got from sensor
+     */
     public int getCurrentHeartRateValue() throws SensorException {
         if (currentHeartRateValue == NO_VALUE_AVAILABLE) {
             throw new SensorException("No data available in heart rate sensor");

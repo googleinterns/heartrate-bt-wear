@@ -14,6 +14,6 @@ public interface GattAttribute {
      *
      * @return attribute UUID
      */
-    UUID getUUid();
+    UUID getUuid();
 
 }

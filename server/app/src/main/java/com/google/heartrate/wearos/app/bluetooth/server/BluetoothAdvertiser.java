@@ -44,6 +44,7 @@ public class BluetoothAdvertiser {
     };
 
     public BluetoothAdvertiser(Context context) throws GattException {
+        BluetoothUtils.assertBluetoothIsSupported(context);
         bluetoothLeAdvertiser = BluetoothUtils.getBluetoothLeAdvertiser(context);
     }
 
@@ -85,10 +86,15 @@ public class BluetoothAdvertiser {
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
     }
 
-    public void restartAdvertisingServices(Set<UUID> keySet) {
+    /**
+     * Restart advertising process with new set of uuid.
+     *
+     * @param serviceUuids new list of GATT services server offers
+     */
+    public void restartAdvertisingServices(Set<UUID> serviceUuids) {
         Log.d(TAG, "Restarting advertising process");
 
         stopAdvertisingServices();
-        startAdvertisingServices(keySet);
+        startAdvertisingServices(serviceUuids);
     }
 }

@@ -68,6 +68,8 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
 
     public BluetoothServer(Context context) throws GattException {
         this.context = context;
+
+        BluetoothUtils.assertBluetoothIsSupported(this.context);
         bluetoothAdvertiser = new BluetoothAdvertiser(this.context);
 
         BluetoothServerCallback mBluetoothServerCallback = new BluetoothServerCallback(this);
