@@ -86,6 +86,8 @@ public class BluetoothAdvertiser {
     }
 
     public void restartAdvertisingServices(Set<UUID> keySet) {
+        Log.d(TAG, "Restarting advertising process");
+
         stopAdvertisingServices();
         startAdvertisingServices(keySet);
     }

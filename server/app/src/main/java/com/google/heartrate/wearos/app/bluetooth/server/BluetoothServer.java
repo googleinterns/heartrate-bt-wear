@@ -52,9 +52,13 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
             int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
             switch (state) {
                 case BluetoothAdapter.STATE_ON:
+                    Log.d(TAG, "BluetoothAdapter state: ON");
+
                     start();
                     break;
                 case BluetoothAdapter.STATE_OFF:
+                    Log.d(TAG, "BluetoothAdapter state: OFF");
+
                     stop();
                     break;
                 default:
@@ -116,7 +120,10 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      */
     public void registerGattServiceHandler(GattServiceRequestHandler requestHandler) {
         BluetoothGattService gattService = requestHandler.getBluetoothGattService();
+
         if (!gattRequestHandlerByServiceUuid.containsKey(gattService.getUuid())) {
+            Log.d(TAG, String.format("Register gatt service handler for service %s", gattService.getUuid()));
+
             bluetoothGattServer.addService(gattService);
             gattRequestHandlerByServiceUuid.put(gattService.getUuid(), requestHandler);
 
@@ -132,7 +139,10 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      */
     public void unregisterGattServiceHandler(GattServiceRequestHandler requestHandler) {
         BluetoothGattService gattService = requestHandler.getBluetoothGattService();
+
         if (gattRequestHandlerByServiceUuid.containsKey(gattService.getUuid())) {
+            Log.d(TAG, String.format("Unregister gatt service handler for service %s", gattService.getUuid()));
+
             bluetoothGattServer.removeService(gattService);
             gattRequestHandlerByServiceUuid.remove(gattService.getUuid());
 
@@ -144,7 +154,7 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * Start advertising process to advertise server existence.
      */
     public void start() {
-        Log.v(TAG, "Starting heart rate server");
+        Log.v(TAG, "Starting bluetooth server");
 
         registerReceiver();
         bluetoothAdvertiser.startAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
@@ -154,7 +164,7 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * Stop server interaction with all connected clients.
      */
     public void stop() {
-        Log.v(TAG, "Stopping heart rate server");
+        Log.d(TAG, "Stopping bluetooth server");
 
         unregisterReceiver();
         for (GattServiceRequestHandler requestHandler : gattRequestHandlerByServiceUuid.values()) {
@@ -169,6 +179,7 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      */
     public void registerReceiver() {
         Log.d(TAG, "Register receiver");
+
         context.registerReceiver(bluetoothReceiver,
                 new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
@@ -178,6 +189,7 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      */
     public void unregisterReceiver() {
         Log.d(TAG, "Unregister receiver");
+
         context.unregisterReceiver(bluetoothReceiver);
     }
 
@@ -194,9 +206,12 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * @param value value of the attribute that was read/written
      */
     void sendResponse(BluetoothDevice device, int requestId, int status, int offset, byte[] value) {
+        Log.d(TAG, String.format("Sending response for request %d to device %s",
+                requestId, device.getAddress()));
+
         if (!bluetoothGattServer.sendResponse(device, requestId, status, offset, value)) {
-            Log.e(TAG, String.format("Send response to device %s has failed!",
-                    device.getAddress()));
+            Log.e(TAG, String.format("Send response for request %d to device %s has failed!",
+                    requestId, device.getAddress()));
         }
     }
 
@@ -211,9 +226,12 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * @param status status of the request to be sent to the remote devices
      */
     void sendErrorResponse(BluetoothDevice device, int requestId, int status) {
+        Log.d(TAG, String.format("Sending error response for request %d to device %s",
+                requestId, device.getAddress()));
+
         if (!bluetoothGattServer.sendResponse(device, requestId, status, 0, null)) {
-            Log.e(TAG, String.format("Send error response to device %s has failed!",
-                    device.getAddress()));
+            Log.e(TAG, String.format("Send error response for request %d to device %s has failed!",
+                    requestId, device.getAddress()));
         } 
     }
 
@@ -224,6 +242,9 @@ public class BluetoothServer implements GattRequestHandlerRegistry {
      * @param characteristic changed characteristic
      */
     void notifyCharacteristicChanged(BluetoothDevice device, BluetoothGattCharacteristic characteristic) {
+        Log.d(TAG, String.format("Sending characteristic %s change notification response to device %s",
+                characteristic.getUuid(), device.getAddress()));
+
         if (!bluetoothGattServer.notifyCharacteristicChanged(device, characteristic, false)) {
             Log.e(TAG, String.format("Characteristic changed notification for device %s has failed!",
                     device.getAddress()));

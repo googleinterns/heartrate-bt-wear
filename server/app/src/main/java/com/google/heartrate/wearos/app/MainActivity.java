@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
 import android.widget.TextView;
 
@@ -25,6 +26,8 @@ import com.google.heartrate.wearos.app.sensors.SensorException;
  */
 public class MainActivity extends WearableActivity implements HeartRateValueSubscriber {
     private static final String TAG = MainActivity.class.getSimpleName();
+
+    private PowerManager.WakeLock wakeLock;
 
     /** {@link TextView} to show current heart rate. */
     private TextView mTextView;
@@ -53,6 +56,10 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         setContentView(R.layout.activity_main);
         mTextView = findViewById(R.id.text);
 
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+        wakeLock.acquire();
+
         heartRateSensorListener = new HeartRateSensorListener(this);
         try {
             heartRateSensorListener.startMeasure();
@@ -76,16 +83,17 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
     protected void onStop() {
         super.onStop();
 
+        unbindService(connection);
         heartRateSensorListener.unregisterSubscriber(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        unbindService(connection);
         stopService(new Intent(this, BluetoothService.class));
         heartRateSensorListener.stopMeasure();
+
+        wakeLock.release();
     }
 
     @Override
