@@ -46,6 +46,6 @@ public class MainActivity extends AppCompatActivity implements BluetoothActionsL
 
     @Override
     public void onAction(String action) {
-        bluetoothActionTextView.setText(action);
+        runOnUiThread(() -> bluetoothActionTextView.setText(action));
     }
 }
