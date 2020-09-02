@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Class {@link HeartRateCharacteristicNotifier} provides methods to schedule notification operations
- * about heart rate characteristic change.
+ * about Heart Rate Measurement characteristic change.
  */
 public class HeartRateCharacteristicNotifier {
     private static final String TAG = HeartRateCharacteristicNotifier.class.getSimpleName();
