@@ -5,15 +5,13 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.util.Log;
 
 import com.google.heartrate.androidos.app.gatt.GattException;
-import com.google.heartrate.androidos.app.gatt.GattServiceManager;
+import com.google.heartrate.androidos.app.gatt.GattCharacteristicManager;
 
 import java.util.UUID;
 
 /**
- * {@link HeartRateServiceManager} is class provides methods for
- * parsing gatt responses to HeartRateService data. HeartRateService has three characteristics:
- * Heart Rate Measurement characteristic with Client Characteristic Configuration Descriptor,
- * Heart Rate Control Point Characteristic and Body Sensor Location Characteristic
+ * {@link HeartRateMeasurementCharacteristicManager} is class provides methods for
+ * parsing gatt responses with Heart Rate Measurement characteristic data.
  * <p>
  * Fields included in the HeartRateMeasurement characteristic data:
  * <table border="1">
@@ -46,8 +44,8 @@ import java.util.UUID;
  * See <a href="https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.heart_rate_measurement.xml".>
  * Heart Rate Measurement Characteristic</a>.
  */
-public class HeartRateServiceManager {
-    private static final String TAG = HeartRateServiceManager.class.getCanonicalName();
+public class HeartRateMeasurementCharacteristicManager {
+    private static final String TAG = HeartRateMeasurementCharacteristicManager.class.getCanonicalName();
 
     /** Heart Rate service UUID. */
     public static final UUID HEART_RATE_SERVICE_UUID = UUID
@@ -93,21 +91,29 @@ public class HeartRateServiceManager {
     public static int getHeartRateMeasurementValue(BluetoothGattCharacteristic characteristic) throws GattException {
         Log.i(TAG, "Get heart rate measurement value");
 
+        assertIsHeartRateMeasurementCharacteristic(characteristic);
         int format = isUInt16HeartRateFormat(characteristic) ?
                 BluetoothGattCharacteristic.FORMAT_UINT16 :
                 BluetoothGattCharacteristic.FORMAT_UINT8;
 
-        int heartRateMeasurement = GattServiceManager.getIntValue(characteristic, format, HEART_RATE_MEASUREMENT_OFFSET);
+        int heartRateMeasurement = GattCharacteristicManager.getIntValue(characteristic, format, HEART_RATE_MEASUREMENT_OFFSET);
 
         Log.v(TAG, String.format("Heart rate format=%d value=%d", format, heartRateMeasurement));
 
         return heartRateMeasurement;
     }
 
-
+    /**
+     * Get expended energy value from characteristic.
+     *
+     * @param characteristic characteristic to get expended energy value from
+     * @return expended energy value
+     * @throws GattException if cannot get expended energy value
+     */
     public static int getExpendedEnergyValue(BluetoothGattCharacteristic characteristic) throws GattException {
         Log.i(TAG, "Parse expended energy value");
 
+        assertIsHeartRateMeasurementCharacteristic(characteristic);
         assertExpendedEnergyIsPresent(characteristic);
 
         /* HR is in UInt8 format => EE offset is base */
@@ -116,7 +122,7 @@ public class HeartRateServiceManager {
                 EXPENDED_ENERGY_SHIFTED_OFFSET :
                 EXPENDED_ENERGY_BASE_OFFSET;
 
-        int expendedEnergy = GattServiceManager.getIntValue(
+        int expendedEnergy = GattCharacteristicManager.getIntValue(
                 characteristic,
                 BluetoothGattCharacteristic.FORMAT_UINT16,
                 expendedEnergyOffset);
@@ -126,7 +132,27 @@ public class HeartRateServiceManager {
         return expendedEnergy;
     }
 
-    private static void assertHeartRateMeasurementCharacteristic(BluetoothGattCharacteristic characteristic) throws GattException {
+    /**
+     * Get flags from Heart Rate Measurement characteristic.
+     *
+     * @param characteristic Heart Rate Measurement characteristic to get flags from
+     * @return Heart Rate Measurement characteristic flags
+     * @throws GattException if cannot get flags from given characteristic
+     */
+    private static int getFlags(BluetoothGattCharacteristic characteristic) throws GattException {
+        return GattCharacteristicManager.getIntValue(
+                characteristic,
+                BluetoothGattCharacteristic.FORMAT_UINT8,
+                FLAGS_OFFSET);
+    }
+
+    /**
+     * Assert given characteristic is Heart Rate characteristic.
+     *
+     * @param characteristic characteristic ti check
+     * @throws GattException if given characteristic not a Heart Rate characteristic
+     */
+    private static void assertIsHeartRateMeasurementCharacteristic(BluetoothGattCharacteristic characteristic) throws GattException {
         if (characteristic.getUuid() != HEART_RATE_MEASUREMENT_UUID) {
             throw new GattException(String.format("Not a heart rate measurement characteristic: got uuid = %s, expected %s",
                     characteristic.getUuid(), HEART_RATE_MEASUREMENT_UUID),
@@ -137,6 +163,7 @@ public class HeartRateServiceManager {
     /**
      * Assert Expended Energy is present.
      *
+     * @param characteristic characteristic to check
      * @throws GattException if not present
      */
     private static void assertExpendedEnergyIsPresent(BluetoothGattCharacteristic characteristic) throws GattException {
@@ -150,13 +177,11 @@ public class HeartRateServiceManager {
      * Determine whether the Heart Rate value is in UInt16 format or not.
      * <br>If Heart Rate Value Format bit in Flags Field is 1, then UInt16 format, otherwise UInt8.
      *
+     * @param characteristic characteristic to check
      * @return true is UInt16, false if UInt8
      */
     private static boolean isUInt16HeartRateFormat(BluetoothGattCharacteristic characteristic) throws GattException {
-        int flags = GattServiceManager.getIntValue(
-                characteristic,
-                BluetoothGattCharacteristic.FORMAT_UINT8,
-                FLAGS_OFFSET);
+        int flags = getFlags(characteristic);
         return (flags & HEART_RATE_MEASUREMENT_UINT16_FLAG) > 0;
     }
 
@@ -164,13 +189,29 @@ public class HeartRateServiceManager {
      * Determine whether the Energy Expended Field is present or not.
      * <p>If Energy Expended Status bit in Flags Field is 1, then is present, otherwise not.
      *
+     * @param characteristic characteristic to check
      * @return true is UInt16, false if UInt8
      */
     private static boolean isExpendedEnergyPresent(BluetoothGattCharacteristic characteristic) throws GattException {
-        int flags = GattServiceManager.getIntValue(
-                characteristic,
-                BluetoothGattCharacteristic.FORMAT_UINT8,
-                FLAGS_OFFSET);
+        int flags = getFlags(characteristic);
         return (flags & EXPENDED_ENERGY_FLAG) > 0;
+    }
+
+    /**
+     * Get Heart Rate service UUID.
+     *
+     * @return Heart Rate service UUID
+     */
+    public static UUID getServiceUuid() {
+        return HEART_RATE_SERVICE_UUID;
+    }
+
+    /**
+     * Get Client Characteristic Configuration descriptor service UUID.
+     *
+     * @return Client Characteristic Configuration descriptor UUID
+     */
+    public static UUID getDescriptorUuid() {
+        return CLIENT_CHARACTERISTIC_CONFIGURATION_UUID;
     }
 }

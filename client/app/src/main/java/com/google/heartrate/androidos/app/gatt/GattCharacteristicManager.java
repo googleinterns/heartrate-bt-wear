@@ -2,13 +2,18 @@ package com.google.heartrate.androidos.app.gatt;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 
-public class GattServiceManager {
+/**
+ * {@link GattCharacteristicManager} class provides method for safety exacting byte array data from
+ * different {@link BluetoothGattCharacteristic}.
+ */
+public class GattCharacteristicManager {
 
-    private GattServiceManager() {}
+    private GattCharacteristicManager() {}
 
     /**
      * Get value from characteristic.
      *
+     * @param characteristic to get value from
      * @return value characteristic
      * @throws GattException if value can not be got
      */
@@ -28,6 +33,7 @@ public class GattServiceManager {
     /**
      * Get int value from characteristic.
      *
+     * @param characteristic to get value from
      * @param format format at which the value should be get
      * @param offset offset at which the value should be get
      * @return int value in given format
