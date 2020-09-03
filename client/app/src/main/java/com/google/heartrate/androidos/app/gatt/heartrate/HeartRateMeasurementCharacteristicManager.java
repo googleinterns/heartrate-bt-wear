@@ -48,7 +48,7 @@ public class HeartRateMeasurementCharacteristicManager {
     private static final String TAG = HeartRateMeasurementCharacteristicManager.class.getCanonicalName();
 
     /** Heart Rate service UUID. */
-    public static final UUID HEART_RATE_SERVICE_UUID = UUID
+    private static final UUID HEART_RATE_SERVICE_UUID = UUID
             .fromString("0000180d-0000-1000-8000-00805f9b34fb");
 
     /** Heart Rate Measurement characteristic UUID. */
@@ -56,7 +56,7 @@ public class HeartRateMeasurementCharacteristicManager {
             .fromString("00002a37-0000-1000-8000-00805f9b34fb");
 
     /** Client Characteristic Configuration descriptor UUID.  */
-    public static final UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUID
+    private static final UUID CLIENT_CHARACTERISTIC_CONFIGURATION_UUID = UUID
             .fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     /** Indicates that the data format of the Heart Rate Measurement value field is in a format of UINT8.  */
