@@ -82,6 +82,8 @@ public class HeartRateMeasurementCharacteristicManager {
     private static final int EXPENDED_ENERGY_SHIFTED_OFFSET = 3;
 
 
+    private HeartRateMeasurementCharacteristicManager() {}
+
     /**
      * Get heart rate measurement value.
      *
