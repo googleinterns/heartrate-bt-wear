@@ -14,6 +14,8 @@ public class FormatUtils {
     /** Maximum value for UInt16 values. */
     public static final int MAX_UINT16 = (1 << 16) - 1;
 
+    private FormatUtils() {}
+
     /**
      * Determine whether the given value is in UInt8 range or not.
      *
