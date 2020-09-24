@@ -17,16 +17,16 @@ import com.google.heartrate.androidos.app.gatt.heartrate.HeartRateServiceManager
 import java.util.List;
 import java.util.UUID;
 
-public class BluetoothHeartRateServiceClient {
-    private static final String TAG = BluetoothHeartRateServiceClient.class.getSimpleName();
+public class BluetoothClient {
+    private static final String TAG = BluetoothClient.class.getSimpleName();
 
     private final BluetoothScanner bluetoothScanner;
-    private final BluetoothHeartRateRequestHandler bluetoothHeartRateRequestHandler;
+    private final BluetoothHeartRateServerInteractor bluetoothHeartRateServerInteractor;
     private Context context;
 
-    public BluetoothHeartRateServiceClient(Context context) throws GattException {
+    public BluetoothClient(Context context) throws GattException {
         this.context = context;
-        bluetoothHeartRateRequestHandler = new BluetoothHeartRateRequestHandler();
+        bluetoothHeartRateServerInteractor = new BluetoothHeartRateServerInteractor();
         bluetoothScanner = new BluetoothScanner(this.context, scanCallback);
     }
 
@@ -34,8 +34,15 @@ public class BluetoothHeartRateServiceClient {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             Log.d(TAG, "onScanResult()");
+
             BluetoothDevice bluetoothDevice = result.getDevice();
-            connect(bluetoothDevice);
+            stopScan();
+            if (!bluetoothHeartRateServerInteractor.isConnected()) {
+                connect(bluetoothDevice);
+            }
+            if (!bluetoothHeartRateServerInteractor.isConnected()) {
+                startScan();
+            }
         }
 
         @Override
@@ -68,9 +75,13 @@ public class BluetoothHeartRateServiceClient {
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "state=STATE_CONNECTED");
-                discoverServices();
+
+                bluetoothHeartRateServerInteractor.discoverServices(gatt);
+
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "state=STATE_DISCONNECTED");
+
+                bluetoothHeartRateServerInteractor.enableCharacteristicNotification(gatt, false);
                 startScan();
             }
         }
@@ -78,28 +89,29 @@ public class BluetoothHeartRateServiceClient {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             Log.d(TAG, String.format("onServicesDiscovered(): device=%s, status=%d", gatt.getDevice().getAddress(), status));
-            enableNotifications();
+
+            bluetoothHeartRateServerInteractor.enableCharacteristicNotification(gatt, true);
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             Log.d(TAG, String.format("onCharacteristicChanged(): device=%s, uuid=%s", gatt.getDevice().getAddress(), characteristic.getUuid()));
-
-            bluetoothHeartRateRequestHandler.onCharacteristicChange(characteristic);
+            bluetoothHeartRateServerInteractor.onCharacteristicChange(characteristic);
         }
     };
 
     public void start(BluetoothActionsListener bluetoothActionsListener) {
         Log.d(TAG, "Start client");
-        bluetoothHeartRateRequestHandler.addListener(bluetoothActionsListener);
+
+        bluetoothHeartRateServerInteractor.addListener(bluetoothActionsListener);
         startScan();
     }
 
     public void stop() {
         Log.d(TAG, "Stop client");
-        disableNotifications();
+
+        stopScan();
         disconnect();
-        close();
     }
 
     private void startScan() {
@@ -113,8 +125,7 @@ public class BluetoothHeartRateServiceClient {
     private void connect(BluetoothDevice bluetoothDevice) {
         Log.d(TAG, String.format("Connecting to server: %s", bluetoothDevice.getAddress()));
         try {
-            stopScan();
-            bluetoothHeartRateRequestHandler.connect(bluetoothDevice.getAddress(), mBluetoothGattCallback, context);
+            bluetoothHeartRateServerInteractor.connect(bluetoothDevice.getAddress(), mBluetoothGattCallback, context);
         } catch (GattException e) {
             Log.e(TAG, String.format("Connecting to server failed: %s", e.getMessage()));
         }
@@ -122,26 +133,7 @@ public class BluetoothHeartRateServiceClient {
 
     private void disconnect() {
         Log.d(TAG, "Disconnecting from server");
-        bluetoothHeartRateRequestHandler.disconnect();
-    }
-
-    private void close() {
-        Log.d(TAG, "Closing server");
-        bluetoothHeartRateRequestHandler.close();
-    }
-
-    private void discoverServices() {
-        Log.d(TAG, "Discovering services");
-        bluetoothHeartRateRequestHandler.discoverServices();
-    }
-
-    private void enableNotifications() {
-        Log.d(TAG, "Enabling notifications from server");
-        bluetoothHeartRateRequestHandler.setCharacteristicNotification(true);
-    }
-
-    private void disableNotifications() {
-        Log.d(TAG, "Disabling notifications from server");
-        bluetoothHeartRateRequestHandler.setCharacteristicNotification(false);
+        bluetoothHeartRateServerInteractor.disconnect();
+        bluetoothHeartRateServerInteractor.close();
     }
 }

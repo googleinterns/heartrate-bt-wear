@@ -26,17 +26,17 @@ public class BluetoothScanner {
     private static final String TAG = BluetoothScanner.class.getSimpleName();
 
     /**
-     * Delay before first execution (seconds).
+     * Delay before first execution.
      */
     private static final long SCAN_DELAY_MS = 0;
     /**
-     * Period between successive executions (seconds).
+     * Period between successive executions.
      */
     private static final long SCAN_INTERVAL_MS = 10000;
     /**
-     * Scan period (seconds).
+     * Scan period.
      */
-    private static final long SCAN_PERIOD_MS = 2000;
+    private static final long SCAN_PERIOD_MS = 1000;
     /**
      * Instance of ScheduledExecutorService.
      */

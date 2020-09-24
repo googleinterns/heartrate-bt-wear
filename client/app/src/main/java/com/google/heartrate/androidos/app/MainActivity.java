@@ -1,21 +1,27 @@
 package com.google.heartrate.androidos.app;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.heartrate.androidos.app.bluetooth.client.BluetoothHeartRateServiceClient;
-import com.google.heartrate.androidos.app.gatt.GattException;
-
-public class MainActivity extends AppCompatActivity implements BluetoothActionsListener {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PowerManager.WakeLock wakeLock;
-    private BluetoothHeartRateServiceClient heartRateServiceClient;
     private TextView bluetoothActionTextView;
+
+    private BroadcastReceiver updateHeartRateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            bluetoothActionTextView.setText(intent.getStringExtra(HeartRateService.BLUETOOTH_MESSAGE));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,24 +34,29 @@ public class MainActivity extends AppCompatActivity implements BluetoothActionsL
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
         wakeLock.acquire();
 
-        try {
-            heartRateServiceClient = new BluetoothHeartRateServiceClient(this);
-        } catch (GattException e) {
-            e.printStackTrace();
-        }
-        heartRateServiceClient.start(this);
+        startForegroundService(new Intent(this, HeartRateService.class));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(HeartRateService.BLUETOOTH_ACTION);
+        registerReceiver(updateHeartRateReceiver, filter);
+    }
+
+    @Override
+    protected void onStop() {
+        unregisterReceiver(updateHeartRateReceiver);
+        super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
-        heartRateServiceClient.stop();
+        stopService(new Intent(this, HeartRateService.class));
         wakeLock.release();
-    }
 
-    @Override
-    public void onAction(String action) {
-        runOnUiThread(() -> bluetoothActionTextView.setText(action));
+        super.onDestroy();
     }
 }
