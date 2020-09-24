@@ -52,7 +52,7 @@ public class HeartRateMeasurementCharacteristicManager {
             .fromString("0000180d-0000-1000-8000-00805f9b34fb");
 
     /** Heart Rate Measurement characteristic UUID. */
-    public static final UUID HEART_RATE_MEASUREMENT_UUID = UUID
+    private static final UUID HEART_RATE_MEASUREMENT_UUID = UUID
             .fromString("00002a37-0000-1000-8000-00805f9b34fb");
 
     /** Client Characteristic Configuration descriptor UUID.  */

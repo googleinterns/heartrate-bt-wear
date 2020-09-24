@@ -8,7 +8,7 @@ import android.bluetooth.BluetoothGatt;
 public class GattException extends Exception {
 
     /** Status of situation caused the exception. Send it in response message to client. */
-    private int status;
+    private final int status;
 
     public GattException(String message, int status) {
         super(message);

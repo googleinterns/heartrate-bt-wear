@@ -6,13 +6,13 @@ package com.google.heartrate.androidos.app.gatt;
 public class FormatUtils {
 
     /** Minimum value for UInt16 values. */
-    public static final int MIN_UINT = 0;
+    private static final int MIN_UINT = 0;
 
     /** Maximum value for UInt8 values. */
-    public static final int MAX_UINT8 = (1 << 8) - 1;
+    private static final int MAX_UINT8 = (1 << 8) - 1;
 
     /** Maximum value for UInt16 values. */
-    public static final int MAX_UINT16 = (1 << 16) - 1;
+    private static final int MAX_UINT16 = (1 << 16) - 1;
 
     private FormatUtils() {}
 
