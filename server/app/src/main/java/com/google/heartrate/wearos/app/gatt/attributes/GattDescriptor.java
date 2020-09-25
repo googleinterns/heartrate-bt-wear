@@ -93,7 +93,7 @@ public class GattDescriptor implements GattAttribute {
     public void assertDescriptorReadable() throws GattException {
         if ((bluetoothGattDescriptor.getPermissions() &
                 BluetoothGattCharacteristic.PERMISSION_READ) == 0) {
-            throw new GattException(String.format("Descriptor %s has no read permissions", getUUid()),
+            throw new GattException(String.format("Descriptor %s has no read permissions", getUuid()),
                     BluetoothGatt.GATT_READ_NOT_PERMITTED);
         }
     }
@@ -106,7 +106,7 @@ public class GattDescriptor implements GattAttribute {
     public void assertDescriptorWritable() throws GattException {
         if ((bluetoothGattDescriptor.getPermissions() &
                 BluetoothGattCharacteristic.PERMISSION_WRITE) == 0) {
-            throw new GattException(String.format("Descriptor %s has no write permissions", getUUid()),
+            throw new GattException(String.format("Descriptor %s has no write permissions", getUuid()),
                     BluetoothGatt.GATT_WRITE_NOT_PERMITTED);
         }
     }
@@ -121,7 +121,7 @@ public class GattDescriptor implements GattAttribute {
     }
 
     @Override
-    public UUID getUUid() {
+    public UUID getUuid() {
         return bluetoothGattDescriptor.getUuid();
     }
 }

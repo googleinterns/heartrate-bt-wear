@@ -15,6 +15,7 @@ import android.util.Log;
 
 import com.google.heartrate.wearos.app.bluetooth.BluetoothUtils;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattServiceRequestHandler;
+import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattRequestHandlerRegistry;
 import com.google.heartrate.wearos.app.gatt.GattException;
 
 import java.util.HashMap;
@@ -24,12 +25,12 @@ import java.util.UUID;
  * {@link BluetoothServer} is wrapper over {@link BluetoothGattServer}
  * allowing set up {@link BluetoothGattServer}, add services to be hosted in server,
  * listen incoming requests and send responses.
- * 
+ *
  * <p>{@link BluetoothServer} provides base request handling. To make {@link BluetoothServer}
  * compatible with all service type, all specific request handling process must be implemented in
  * {@link GattServiceRequestHandler}.
  */
-public class BluetoothServer {
+public class BluetoothServer implements GattRequestHandlerRegistry {
     private static final String TAG = BluetoothServer.class.getSimpleName();
 
     /** Application context. */
@@ -51,9 +52,13 @@ public class BluetoothServer {
             int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
             switch (state) {
                 case BluetoothAdapter.STATE_ON:
+                    Log.d(TAG, "BluetoothAdapter state: ON");
+
                     start();
                     break;
                 case BluetoothAdapter.STATE_OFF:
+                    Log.d(TAG, "BluetoothAdapter state: OFF");
+
                     stop();
                     break;
                 default:
@@ -63,6 +68,8 @@ public class BluetoothServer {
 
     public BluetoothServer(Context context) throws GattException {
         this.context = context;
+
+        BluetoothUtils.assertBluetoothIsSupported(this.context);
         bluetoothAdvertiser = new BluetoothAdvertiser(this.context);
 
         BluetoothServerCallback mBluetoothServerCallback = new BluetoothServerCallback(this);
@@ -107,6 +114,7 @@ public class BluetoothServer {
     }
 
     /**
+     * {@link GattRequestHandlerRegistry#registerGattServiceHandler}
      * Register given gatt service request handler in server.
      * Add handler's service to the {@link BluetoothGattServer} to be hosted.
      *
@@ -114,28 +122,43 @@ public class BluetoothServer {
      */
     public void registerGattServiceHandler(GattServiceRequestHandler requestHandler) {
         BluetoothGattService gattService = requestHandler.getBluetoothGattService();
-        bluetoothGattServer.addService(gattService);
-        gattRequestHandlerByServiceUuid.put(gattService.getUuid(), requestHandler);
+
+        if (!gattRequestHandlerByServiceUuid.containsKey(gattService.getUuid())) {
+            Log.d(TAG, String.format("Register gatt service handler for service %s", gattService.getUuid()));
+
+            bluetoothGattServer.addService(gattService);
+            gattRequestHandlerByServiceUuid.put(gattService.getUuid(), requestHandler);
+
+            bluetoothAdvertiser.restartAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
+        }
     }
 
     /**
-     * Unregister given gatt service request handler from server.
+     * {@link GattRequestHandlerRegistry#unregisterGattServiceHandler}
      * Remove handler's service from the {@link BluetoothGattServer}.
      *
      * @param requestHandler gatt service request handler to unregister
      */
     public void unregisterGattServiceHandler(GattServiceRequestHandler requestHandler) {
         BluetoothGattService gattService = requestHandler.getBluetoothGattService();
-        bluetoothGattServer.removeService(gattService);
-        gattRequestHandlerByServiceUuid.remove(gattService.getUuid());
+
+        if (gattRequestHandlerByServiceUuid.containsKey(gattService.getUuid())) {
+            Log.d(TAG, String.format("Unregister gatt service handler for service %s", gattService.getUuid()));
+
+            bluetoothGattServer.removeService(gattService);
+            gattRequestHandlerByServiceUuid.remove(gattService.getUuid());
+
+            bluetoothAdvertiser.restartAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
+        }
     }
 
     /**
      * Start advertising process to advertise server existence.
      */
     public void start() {
-        Log.v(TAG, "Starting heart rate server");
+        Log.v(TAG, "Starting bluetooth server");
 
+        registerReceiver();
         bluetoothAdvertiser.startAdvertisingServices(gattRequestHandlerByServiceUuid.keySet());
     }
 
@@ -143,8 +166,9 @@ public class BluetoothServer {
      * Stop server interaction with all connected clients.
      */
     public void stop() {
-        Log.v(TAG, "Stopping heart rate server");
+        Log.d(TAG, "Stopping bluetooth server");
 
+        unregisterReceiver();
         for (GattServiceRequestHandler requestHandler : gattRequestHandlerByServiceUuid.values()) {
             requestHandler.onServiceRemoved();
         }
@@ -157,6 +181,7 @@ public class BluetoothServer {
      */
     public void registerReceiver() {
         Log.d(TAG, "Register receiver");
+
         context.registerReceiver(bluetoothReceiver,
                 new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
     }
@@ -166,6 +191,7 @@ public class BluetoothServer {
      */
     public void unregisterReceiver() {
         Log.d(TAG, "Unregister receiver");
+
         context.unregisterReceiver(bluetoothReceiver);
     }
 
@@ -181,10 +207,13 @@ public class BluetoothServer {
      * @param offset offset for partial read/write response
      * @param value value of the attribute that was read/written
      */
-    public void sendResponse(BluetoothDevice device, int requestId, int status, int offset, byte[] value) {
+    void sendResponse(BluetoothDevice device, int requestId, int status, int offset, byte[] value) {
+        Log.d(TAG, String.format("Sending response for request %d to device %s",
+                requestId, device.getAddress()));
+
         if (!bluetoothGattServer.sendResponse(device, requestId, status, offset, value)) {
-            Log.e(TAG, String.format("Send response to device %s has failed!",
-                    device.getAddress()));
+            Log.e(TAG, String.format("Send response for request %d to device %s has failed!",
+                    requestId, device.getAddress()));
         }
     }
 
@@ -198,10 +227,13 @@ public class BluetoothServer {
      * @param requestId id of the request that was received with the callback
      * @param status status of the request to be sent to the remote devices
      */
-    public void sendErrorResponse(BluetoothDevice device, int requestId, int status) {
+    void sendErrorResponse(BluetoothDevice device, int requestId, int status) {
+        Log.d(TAG, String.format("Sending error response for request %d to device %s",
+                requestId, device.getAddress()));
+
         if (!bluetoothGattServer.sendResponse(device, requestId, status, 0, null)) {
-            Log.e(TAG, String.format("Send error response to device %s has failed!",
-                    device.getAddress()));
+            Log.e(TAG, String.format("Send error response for request %d to device %s has failed!",
+                    requestId, device.getAddress()));
         } 
     }
 
@@ -211,7 +243,10 @@ public class BluetoothServer {
      * @param device device to notify
      * @param characteristic changed characteristic
      */
-    public void notifyCharacteristicChanged(BluetoothDevice device, BluetoothGattCharacteristic characteristic) {
+    void notifyCharacteristicChanged(BluetoothDevice device, BluetoothGattCharacteristic characteristic) {
+        Log.d(TAG, String.format("Sending characteristic %s change notification response to device %s",
+                characteristic.getUuid(), device.getAddress()));
+
         if (!bluetoothGattServer.notifyCharacteristicChanged(device, characteristic, false)) {
             Log.e(TAG, String.format("Characteristic changed notification for device %s has failed!",
                     device.getAddress()));

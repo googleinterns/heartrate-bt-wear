@@ -31,7 +31,7 @@ public class BluetoothAdvertiser {
     private final BluetoothLeAdvertiser bluetoothLeAdvertiser;
 
     /** {@link AdvertiseCallback} to receive async responses from {@link BluetoothAdvertiser}. */
-    final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+    private final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             Log.i(TAG, "BluetoothLE Advertise Started.");
@@ -44,6 +44,7 @@ public class BluetoothAdvertiser {
     };
 
     public BluetoothAdvertiser(Context context) throws GattException {
+        BluetoothUtils.assertBluetoothIsSupported(context);
         bluetoothLeAdvertiser = BluetoothUtils.getBluetoothLeAdvertiser(context);
     }
 
@@ -83,5 +84,17 @@ public class BluetoothAdvertiser {
         Log.d(TAG, "Stopping advertising");
 
         bluetoothLeAdvertiser.stopAdvertising(advertiseCallback);
+    }
+
+    /**
+     * Restart advertising process with new set of uuid.
+     *
+     * @param serviceUuids new list of GATT services server offers
+     */
+    public void restartAdvertisingServices(Set<UUID> serviceUuids) {
+        Log.d(TAG, "Restarting advertising process");
+
+        stopAdvertisingServices();
+        startAdvertisingServices(serviceUuids);
     }
 }
