@@ -80,7 +80,6 @@ public class HeartRateMeasurementCharacteristicManager {
     /** Offset at which Expended Energy value is Heart Rate Measurement value field is in a format of UINT16. */
     private static final int EXPENDED_ENERGY_SHIFTED_OFFSET = 3;
 
-
     private HeartRateMeasurementCharacteristicManager() {}
 
     /**
