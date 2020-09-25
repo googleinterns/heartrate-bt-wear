@@ -1,20 +1,21 @@
 package com.google.heartrate.wearos.app.sensors;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Listener for heart rate sensor.
  */
 public class HeartRateSensorListener implements SensorEventListener {
     private static final String TAG = HeartRateSensorListener.class.getSimpleName();
+
+    public static final String HEART_RATE_CHANGE = "com.google.app.androidos.walking.stepcontroller.HEART_RATE_CHANGE";
+    public static final String HEART_RATE_VALUE = "com.google.app.androidos.walking.stepcontroller.HEART_RATE_VALUE";
 
     /** Heart rate sensor data when sensor is not available or started. */
     private static final int NO_VALUE_AVAILABLE = 0;
@@ -25,33 +26,16 @@ public class HeartRateSensorListener implements SensorEventListener {
     /** Heart rate sensor to listen to. */
     private final Sensor heartRateSensor;
 
-    /** Subscriber for heart rate value updates. */
-    private List<HeartRateValueSubscriber> subscribers = new ArrayList<>();
+    /** Application context. */
+    private final Context context;
 
     /** Heart rate value from last sensor update. */
     private int currentHeartRateValue = NO_VALUE_AVAILABLE;
 
     public HeartRateSensorListener(Context context) {
+        this.context = context;
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         heartRateSensor = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
-    }
-
-    /**
-     * Register subscriber.
-     * @param subscriber subscriber to register.
-     */
-    public void registerSubscriber(HeartRateValueSubscriber subscriber) {
-        Log.d(TAG, "Register subscriber");
-        subscribers.add(subscriber);
-    }
-
-    /**
-     * Unregister subscriber.
-     * @param subscriber subscriber to unregister.
-     */
-    public void unregisterSubscriber(HeartRateValueSubscriber subscriber) {
-        Log.d(TAG, "Unregister subscriber");
-        subscribers.remove(subscriber);
     }
 
     /**
@@ -90,9 +74,11 @@ public class HeartRateSensorListener implements SensorEventListener {
         Log.d(TAG, String.format("onSensorChanged() - value=%d", heartRate));
 
         currentHeartRateValue = heartRate;
-        for (HeartRateValueSubscriber listener : subscribers) {
-            listener.onHeartRateValueChanged(heartRate);
-        }
+
+        Intent intent = new Intent(HEART_RATE_CHANGE);
+        intent.putExtra(HEART_RATE_VALUE, heartRate);
+
+        context.sendBroadcast(intent);
     }
 
     /**

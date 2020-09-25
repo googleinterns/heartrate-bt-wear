@@ -31,7 +31,7 @@ public class BluetoothAdvertiser {
     private final BluetoothLeAdvertiser bluetoothLeAdvertiser;
 
     /** {@link AdvertiseCallback} to receive async responses from {@link BluetoothAdvertiser}. */
-    final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
+    private final AdvertiseCallback advertiseCallback = new AdvertiseCallback() {
         @Override
         public void onStartSuccess(AdvertiseSettings settingsInEffect) {
             Log.i(TAG, "BluetoothLE Advertise Started.");

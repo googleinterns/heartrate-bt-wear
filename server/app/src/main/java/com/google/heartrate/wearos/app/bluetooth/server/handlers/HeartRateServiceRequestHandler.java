@@ -30,7 +30,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     private final HeartRateCharacteristicNotifier heartRateCharacteristicNotifier;
 
     /** Storage for all {@link BluetoothDevice} registered to Heart Rate Measurement characteristic. */
-    private BluetoothDeviceStorage registeredDeviceStorage;
+    private final BluetoothDeviceStorage registeredDeviceStorage;
 
     public HeartRateServiceRequestHandler(HeartRateSensorListener heartRateSensorListener) {
         heartRateGattService = new HeartRateGattService();
@@ -47,7 +47,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
      */
     @Override
     public void onServiceAdded(BluetoothServerCallback bluetoothServerCallback) {
-        heartRateCharacteristicNotifier.start(bluetoothServerCallback);
+        heartRateCharacteristicNotifier.startNotification(bluetoothServerCallback);
     }
 
     /**
@@ -57,7 +57,7 @@ public class HeartRateServiceRequestHandler implements GattServiceRequestHandler
     @Override
     public void onServiceRemoved() {
         registeredDeviceStorage.removeAllDevices();
-        heartRateCharacteristicNotifier.stop();
+        heartRateCharacteristicNotifier.stopNotification();
     }
 
     /**

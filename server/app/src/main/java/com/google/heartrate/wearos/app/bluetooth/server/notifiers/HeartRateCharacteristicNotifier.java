@@ -68,9 +68,9 @@ public class HeartRateCharacteristicNotifier {
     }
 
     /** Start scheduled notification with default parameters. */
-    public void start(BluetoothServerCallback bluetoothServerCallback) {
-        stop();
-        start(NOTIFY_FIRST_WAIT_PERIOD_MS, NOTIFY_WAIT_PERIOD_MS, bluetoothServerCallback);
+    public void startNotification(BluetoothServerCallback bluetoothServerCallback) {
+        stopNotification();
+        startNotification(NOTIFY_FIRST_WAIT_PERIOD_MS, NOTIFY_WAIT_PERIOD_MS, bluetoothServerCallback);
     }
 
     /**
@@ -78,7 +78,7 @@ public class HeartRateCharacteristicNotifier {
      * @param firstWaitPeriod delay before first notification (seconds)
      * @param waitPeriod period between successive notifications (seconds)
      */
-    public void start(long firstWaitPeriod, long waitPeriod, BluetoothServerCallback bluetoothServerCallback) {
+    public void startNotification(long firstWaitPeriod, long waitPeriod, BluetoothServerCallback bluetoothServerCallback) {
         notificationTimerFuture = notificationExecutor.scheduleWithFixedDelay(() -> {
             try {
                 changeCharacteristic();
@@ -90,7 +90,7 @@ public class HeartRateCharacteristicNotifier {
     }
 
     /** Stop scheduled run. */
-    public void stop() {
+    public void stopNotification() {
         if (notificationTimerFuture != null) {
             notificationTimerFuture.cancel(true);
             notificationTimerFuture = null;

@@ -1,37 +1,43 @@
 package com.google.heartrate.wearos.app;
 
+import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.support.wearable.activity.WearableActivity;
+import android.util.Log;
 import android.widget.TextView;
+
+import androidx.core.app.ActivityCompat;
 
 import com.google.heartrate.wearos.app.bluetooth.server.BluetoothServer;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.GattRequestHandlerRegistry;
 import com.google.heartrate.wearos.app.bluetooth.server.handlers.HeartRateServiceRequestHandler;
 import com.google.heartrate.wearos.app.gatt.heartrate.service.HeartRateGattService;
 import com.google.heartrate.wearos.app.sensors.HeartRateSensorListener;
-import com.google.heartrate.wearos.app.sensors.HeartRateValueSubscriber;
 import com.google.heartrate.wearos.app.sensors.SensorException;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.google.heartrate.wearos.app.sensors.HeartRateSensorListener.HEART_RATE_CHANGE;
+import static com.google.heartrate.wearos.app.sensors.HeartRateSensorListener.HEART_RATE_VALUE;
 
 /**
- * Application main activity sets up heart rate server and show current heart rate.
- *
- * <p>Used only for testing {@link BluetoothServer} with {@link HeartRateGattService} hosted.
+ * Application main activity sets up {@link HeartRateGattService} in {@link BluetoothServer}
+ * and show current heart rate.
  */
-public class MainActivity extends WearableActivity implements HeartRateValueSubscriber {
+public class MainActivity extends WearableActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    /** WakeLock to prevent sensor go to suspend mode. */
-    private PowerManager.WakeLock wakeLock;
-
     /** {@link TextView} to show current heart rate. */
-    private TextView mTextView;
+    private TextView heartRateTextView;
 
     /** Sensor listener to get heart rate. */
     private HeartRateSensorListener heartRateSensorListener;
@@ -51,15 +57,31 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         public void onServiceDisconnected(ComponentName className) { }
     };
 
+
+    private void requestPermissions() {
+        List<String> permissionsNeeded = new ArrayList<>();
+        if (checkSelfPermission(Manifest.permission.BODY_SENSORS) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Body sensors permission is not granted");
+            permissionsNeeded.add(Manifest.permission.BODY_SENSORS);
+        }
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Location permission is not granted");
+            permissionsNeeded.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (permissionsNeeded.size() > 0) {
+            ActivityCompat.requestPermissions(this,
+                    permissionsNeeded.toArray(new String[]{}),
+                    /* application request code */1);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mTextView = findViewById(R.id.text);
+        requestPermissions();
 
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-        wakeLock.acquire();
+        heartRateTextView = findViewById(R.id.text);
 
         heartRateSensorListener = new HeartRateSensorListener(this);
         try {
@@ -76,7 +98,6 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
     protected void onStart() {
         super.onStart();
 
-        heartRateSensorListener.registerSubscriber(this);
         bindService(new Intent(this, BluetoothService.class), connection, Context.BIND_AUTO_CREATE);
     }
 
@@ -85,7 +106,20 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         super.onStop();
 
         unbindService(connection);
-        heartRateSensorListener.unregisterSubscriber(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IntentFilter intentFilter = new IntentFilter(HEART_RATE_CHANGE);
+        registerReceiver(heartRateBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(heartRateBroadcastReceiver);
+        super.onPause();
     }
 
     @Override
@@ -93,12 +127,15 @@ public class MainActivity extends WearableActivity implements HeartRateValueSubs
         super.onDestroy();
         stopService(new Intent(this, BluetoothService.class));
         heartRateSensorListener.stopMeasure();
-
-        wakeLock.release();
     }
 
-    @Override
-    public void onHeartRateValueChanged(int value) {
-        mTextView.setText(String.format("HR: %d", value));
-    }
+    /** Receiver to get current heart rate. */
+    private BroadcastReceiver heartRateBroadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int heartRate = intent.getIntExtra(HEART_RATE_VALUE, 0);
+            heartRateTextView.setText(String.format("HR: %d",  heartRate));
+        }
+    };
 }
