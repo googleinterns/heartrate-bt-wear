@@ -68,7 +68,6 @@ public class HeartRateMeasurementCharacteristicManager {
     /** Indicates that the Energy Expended field is present in the Heart Rate Measurement characteristic. */
     private static final byte EXPENDED_ENERGY_FLAG = 0b00001000;
 
-
     /** Offset at which the Heart Rate Measurement characteristic flags are stored. */
     private static final int FLAGS_OFFSET = 0;
 
